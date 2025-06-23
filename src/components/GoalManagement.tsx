@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CheckCircle2, Star, Calendar } from "lucide-react";
 import { Goal } from './Dashboard';
@@ -20,7 +21,12 @@ const GoalManagement = ({ goals, onGoalsChange, onGoalComplete }: GoalManagement
   const [newGoal, setNewGoal] = useState({
     title: '',
     category: '',
-    targetDate: ''
+    targetDate: '',
+    specific: '',
+    measurable: '',
+    achievable: '',
+    relevant: '',
+    timeBound: ''
   });
 
   const handleAddGoal = () => {
@@ -30,11 +36,25 @@ const GoalManagement = ({ goals, onGoalsChange, onGoalComplete }: GoalManagement
         title: newGoal.title,
         category: newGoal.category,
         targetDate: newGoal.targetDate,
-        completed: false
+        completed: false,
+        specific: newGoal.specific,
+        measurable: newGoal.measurable,
+        achievable: newGoal.achievable,
+        relevant: newGoal.relevant,
+        timeBound: newGoal.timeBound
       };
       
       onGoalsChange([...goals, goal]);
-      setNewGoal({ title: '', category: '', targetDate: '' });
+      setNewGoal({ 
+        title: '', 
+        category: '', 
+        targetDate: '',
+        specific: '',
+        measurable: '',
+        achievable: '',
+        relevant: '',
+        timeBound: ''
+      });
       setIsAddingGoal(false);
     }
   };
@@ -77,6 +97,9 @@ const GoalManagement = ({ goals, onGoalsChange, onGoalComplete }: GoalManagement
                     <span>{new Date(goal.targetDate).toLocaleDateString()}</span>
                   </div>
                 </div>
+                {goal.relevant && (
+                  <p className="text-xs text-gray-500 mt-1">Why: {goal.relevant}</p>
+                )}
               </div>
               <Button
                 size="sm"
@@ -106,36 +129,83 @@ const GoalManagement = ({ goals, onGoalsChange, onGoalComplete }: GoalManagement
                 Add Goal
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-3xl">
+            <DialogContent className="rounded-3xl max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Create a New Goal</DialogTitle>
+                <DialogTitle>Create a SMART Goal</DialogTitle>
                 <DialogDescription>
-                  What would you like to focus on?
+                  Let's make your goal Specific, Measurable, Achievable, Relevant, and Time-bound
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="title">Goal Title</Label>
+                    <Input
+                      id="title"
+                      placeholder="e.g., Launch my creative project"
+                      value={newGoal.title}
+                      onChange={(e) => setNewGoal(prev => ({ ...prev, title: e.target.value }))}
+                      className="rounded-xl"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="category">Category</Label>
+                    <Input
+                      id="category"
+                      placeholder="e.g., Creative, Health, Learning"
+                      value={newGoal.category}
+                      onChange={(e) => setNewGoal(prev => ({ ...prev, category: e.target.value }))}
+                      className="rounded-xl"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <Label htmlFor="title">Goal Title</Label>
-                  <Input
-                    id="title"
-                    placeholder="e.g., Launch my creative project"
-                    value={newGoal.title}
-                    onChange={(e) => setNewGoal(prev => ({ ...prev, title: e.target.value }))}
+                  <Label htmlFor="specific">Specific - What exactly do you want to accomplish?</Label>
+                  <Textarea
+                    id="specific"
+                    placeholder="Be specific about what you want to achieve..."
+                    value={newGoal.specific}
+                    onChange={(e) => setNewGoal(prev => ({ ...prev, specific: e.target.value }))}
                     className="rounded-xl"
                   />
                 </div>
+
                 <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Input
-                    id="category"
-                    placeholder="e.g., Creative, Health, Learning"
-                    value={newGoal.category}
-                    onChange={(e) => setNewGoal(prev => ({ ...prev, category: e.target.value }))}
+                  <Label htmlFor="measurable">Measurable - How will you track progress?</Label>
+                  <Textarea
+                    id="measurable"
+                    placeholder="What metrics or milestones will you use?"
+                    value={newGoal.measurable}
+                    onChange={(e) => setNewGoal(prev => ({ ...prev, measurable: e.target.value }))}
                     className="rounded-xl"
                   />
                 </div>
+
                 <div>
-                  <Label htmlFor="targetDate">Target Date</Label>
+                  <Label htmlFor="achievable">Achievable - Is this realistic for you right now?</Label>
+                  <Textarea
+                    id="achievable"
+                    placeholder="Consider your current resources and constraints..."
+                    value={newGoal.achievable}
+                    onChange={(e) => setNewGoal(prev => ({ ...prev, achievable: e.target.value }))}
+                    className="rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="relevant">Relevant - Why does this goal matter to you?</Label>
+                  <Textarea
+                    id="relevant"
+                    placeholder="How does this align with your values and long-term vision?"
+                    value={newGoal.relevant}
+                    onChange={(e) => setNewGoal(prev => ({ ...prev, relevant: e.target.value }))}
+                    className="rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="targetDate">Time-bound - When will you complete this?</Label>
                   <Input
                     id="targetDate"
                     type="date"
@@ -144,6 +214,7 @@ const GoalManagement = ({ goals, onGoalsChange, onGoalComplete }: GoalManagement
                     className="rounded-xl"
                   />
                 </div>
+
                 <Button 
                   onClick={handleAddGoal}
                   className="w-full rounded-xl bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600"

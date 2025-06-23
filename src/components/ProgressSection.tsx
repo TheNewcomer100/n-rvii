@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Flame, Star, TrendingUp } from "lucide-react";
+import { Flame, Star, TrendingUp, Calendar } from "lucide-react";
 import { Goal } from './Dashboard';
 
 interface ProgressSectionProps {
@@ -15,12 +15,19 @@ const ProgressSection = ({ goals, completedTasks, streak }: ProgressSectionProps
   const activeGoals = goals.filter(goal => !goal.completed);
   const completedGoals = goals.filter(goal => goal.completed);
   
-  // Calculate today's progress (mock data for now)
+  // Calculate today's progress
   const todaysTasks = 3; // This would be dynamic based on suggested tasks
   const todaysProgress = Math.min((completedTasks.length / todaysTasks) * 100, 100);
   
-  // Calculate weekly progress (mock data)
-  const weeklyProgress = 75;
+  // Calculate weekly progress (starts at 0%, resets every Monday)
+  const today = new Date();
+  const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 1)); // Monday
+  const isNewWeek = startOfWeek.toDateString() === new Date().toDateString();
+  
+  // Mock weekly progress - in real app this would track actual weekly completion
+  const weeklyTasksCompleted = isNewWeek ? 0 : 8; // Reset to 0 for new week
+  const weeklyTasksTotal = 15;
+  const weeklyProgress = (weeklyTasksCompleted / weeklyTasksTotal) * 100;
 
   return (
     <div className="space-y-6">
@@ -46,9 +53,12 @@ const ProgressSection = ({ goals, completedTasks, streak }: ProgressSectionProps
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Weekly Progress</span>
-              <span className="font-medium text-gray-800">{weeklyProgress}%</span>
+              <span className="font-medium text-gray-800">{Math.round(weeklyProgress)}%</span>
             </div>
             <Progress value={weeklyProgress} className="h-2" />
+            {isNewWeek && (
+              <p className="text-xs text-blue-600">✨ Fresh start! New week begins.</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -69,7 +79,9 @@ const ProgressSection = ({ goals, completedTasks, streak }: ProgressSectionProps
               </div>
               <div>
                 <p className="font-medium text-gray-800">Check-in Streak</p>
-                <p className="text-sm text-gray-600">Consecutive days</p>
+                <p className="text-sm text-gray-600">
+                  {streak === 0 ? 'Start your first check-in!' : 'Consecutive days'}
+                </p>
               </div>
             </div>
             <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">
@@ -88,6 +100,17 @@ const ProgressSection = ({ goals, completedTasks, streak }: ProgressSectionProps
               ))}
             </div>
           )}
+
+          {/* Weekly Reset Info */}
+          <div className="p-3 bg-blue-50 rounded-2xl">
+            <div className="flex items-center space-x-2 text-sm text-blue-800">
+              <Calendar className="w-4 h-4" />
+              <span className="font-medium">Week resets every Monday</span>
+            </div>
+            <p className="text-xs text-blue-600 mt-1">
+              Fresh goals and progress tracking each week
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -109,7 +132,7 @@ const ProgressSection = ({ goals, completedTasks, streak }: ProgressSectionProps
             </div>
             <div className="p-3 bg-green-50 rounded-2xl">
               <div className="text-2xl font-bold text-green-600">{completedTasks.length}</div>
-              <div className="text-xs text-gray-600">Tasks Done</div>
+              <div className="text-xs text-gray-600">Tasks Today</div>
             </div>
           </div>
         </CardContent>
