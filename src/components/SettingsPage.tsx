@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Download, User, Bell, Shield, FileText } from "lucide-react";
+import { ArrowLeft, Download, User, Bell, Shield, FileText, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface SettingsPageProps {
@@ -70,6 +70,17 @@ const SettingsPage = ({ onBack, userName }: SettingsPageProps) => {
       title: "Settings Saved ✨",
       description: "Your preferences have been updated.",
     });
+  };
+
+  const handleDeleteAccount = () => {
+    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+      toast({
+        title: "Account Deletion Requested",
+        description: "Your account deletion request has been processed.",
+        variant: "destructive"
+      });
+      // In real implementation, this would delete the account
+    }
   };
 
   return (
@@ -266,6 +277,34 @@ const SettingsPage = ({ onBack, userName }: SettingsPageProps) => {
             <p className="text-xs text-gray-500">
               Your exported data includes mood check-ins, completed tasks, and goal progress.
             </p>
+          </CardContent>
+        </Card>
+
+        {/* Delete Account */}
+        <Card className="bg-white/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg border-red-200">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 text-red-600">
+              <Trash2 className="w-5 h-5" />
+              <span>Delete Account</span>
+            </CardTitle>
+            <CardDescription>
+              Permanently remove your account and all associated data
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                This action cannot be undone. All your data, including mood check-ins, goals, and progress will be permanently deleted.
+              </p>
+              <Button
+                onClick={handleDeleteAccount}
+                variant="destructive"
+                className="rounded-xl"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete My Account
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

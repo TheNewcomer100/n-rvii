@@ -30,11 +30,12 @@ const Dashboard = () => {
   const [currentMood, setCurrentMood] = useState<string | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
-  const [streak, setStreak] = useState(0); // Always start at 0
+  const [streak, setStreak] = useState(0);
   const [isSickDay, setIsSickDay] = useState(false);
-  const [userName] = useState("Alex");
+  const [userName, setUserName] = useState("User"); // Changed from fixed "Alex"
   const [showSettings, setShowSettings] = useState(false);
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
+  const [lastCheckInDate, setLastCheckInDate] = useState<string | null>(null);
   const [dailyReflection, setDailyReflection] = useState<string>('');
 
   const welcomeMessages = [
@@ -49,19 +50,34 @@ const Dashboard = () => {
     return message.replace('{name}', userName);
   };
 
+  const getTodayDateString = () => {
+    return new Date().toDateString();
+  };
+
   const handleMoodChange = (mood: string) => {
-    setCurrentMood(mood);
-    setHasCheckedIn(true);
-    // Update streak only after first check-in and task completion
-    if (completedTasks.length > 0) {
-      setStreak(prev => prev + 1);
+    const today = getTodayDateString();
+    
+    // Only increment streak if it's a new day and user hasn't checked in today
+    if (lastCheckInDate !== today) {
+      setCurrentMood(mood);
+      setHasCheckedIn(true);
+      setLastCheckInDate(today);
+      
+      // Only increment streak if user has completed at least one task
+      if (completedTasks.length > 0) {
+        setStreak(prev => prev + 1);
+      }
+    } else {
+      // Just update mood if already checked in today
+      setCurrentMood(mood);
     }
   };
 
   const handleTaskComplete = (tasks: string[]) => {
     setCompletedTasks(tasks);
-    // Update streak if user has checked in and completed at least one task
-    if (hasCheckedIn && tasks.length > 0 && completedTasks.length === 0) {
+    
+    // If user has checked in today and this is their first task completion, increment streak
+    if (hasCheckedIn && lastCheckInDate === getTodayDateString() && completedTasks.length === 0 && tasks.length > 0) {
       setStreak(prev => prev + 1);
     }
   };
@@ -80,6 +96,7 @@ const Dashboard = () => {
 
   const handleSickDay = () => {
     setIsSickDay(true);
+    // Sick day pauses streak but doesn't reset it
     toast({
       title: "💙 Taking Care of Yourself",
       description: "Your wellbeing comes first. Rest easy knowing your streak is safe.",

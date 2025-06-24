@@ -105,19 +105,13 @@ const AuthPage = ({ onSignIn }: AuthPageProps) => {
               </Button>
             </form>
             
-            <div className="text-center space-y-2">
+            <div className="text-center">
               <button
                 onClick={() => setIsSignUp(!isSignUp)}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium"
               >
                 {isSignUp ? 'Already have an account? Sign in' : 'New here? Start your journey'}
               </button>
-              
-              <div>
-                <button className="text-green-600 hover:text-green-700 text-sm font-medium">
-                  See How It Works
-                </button>
-              </div>
             </div>
           </CardContent>
         </Card>
