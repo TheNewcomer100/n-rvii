@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +28,7 @@ const AuthPage = ({ onSignIn }: AuthPageProps) => {
         <div className="text-center space-y-4">
           <div className="flex justify-center">
             <img 
-              src="/lovable-uploads/8c5d43a0-4c58-4d1f-a419-36dd96f5f908.png" 
+              src="/lovable-uploads/b7e84c59-cc69-4b80-9e2c-7969dd1c0c4f.png" 
               alt="Nrvii Logo" 
               className="h-12 w-auto"
             />
