@@ -2,40 +2,31 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Circle } from "lucide-react";
-import { Goal } from './Dashboard';
+import { Goal, Task } from './Dashboard';
+import AITaskGenerator from './enhanced/AITaskGenerator';
+import InlineTaskEditor from './enhanced/InlineTaskEditor';
 
 interface TaskSuggestionsProps {
   mood: string | null;
   goals: Goal[];
+  tasks: Task[];
   completedTasks: string[];
   onTaskComplete: (tasks: string[]) => void;
+  onTasksGenerated: (tasks: Task[]) => void;
+  onTaskUpdate: (taskId: string, newTitle: string) => void;
 }
 
-const taskSuggestions = {
-  energized: [
-    { id: 'energized-1', title: 'Outline your project plan', type: 'complex' },
-    { id: 'energized-2', title: 'Deep work session (45 mins)', type: 'complex' },
-    { id: 'energized-3', title: 'Brainstorm new ideas', type: 'medium' }
-  ],
-  focused: [
-    { id: 'focused-1', title: 'Tackle your hardest task first', type: 'complex' },
-    { id: 'focused-2', title: 'Review and refine your work', type: 'medium' },
-    { id: 'focused-3', title: 'Plan tomorrow\'s priorities', type: 'medium' }
-  ],
-  tired: [
-    { id: 'tired-1', title: 'Organize your workspace', type: 'simple' }
-  ],
-  stressed: [
-    { id: 'stressed-1', title: 'Take a mindful 10-minute break', type: 'simple' }
-  ],
-  burnout: [
-    { id: 'burnout-1', title: 'Sort through old files', type: 'simple' }
-  ]
-};
-
-const TaskSuggestions = ({ mood, goals, completedTasks, onTaskComplete }: TaskSuggestionsProps) => {
+const TaskSuggestions = ({ 
+  mood, 
+  goals, 
+  tasks, 
+  completedTasks, 
+  onTaskComplete, 
+  onTasksGenerated,
+  onTaskUpdate 
+}: TaskSuggestionsProps) => {
   const activeGoals = goals.filter(goal => !goal.completed);
-  const suggestedTasks = mood ? taskSuggestions[mood as keyof typeof taskSuggestions] || [] : [];
+  const activeTasks = tasks.filter(task => !task.completed);
 
   const handleTaskToggle = (taskId: string) => {
     if (completedTasks.includes(taskId)) {
@@ -43,10 +34,6 @@ const TaskSuggestions = ({ mood, goals, completedTasks, onTaskComplete }: TaskSu
     } else {
       onTaskComplete([...completedTasks, taskId]);
     }
-  };
-
-  const getTaskGoal = (taskIndex: number) => {
-    return activeGoals[taskIndex % activeGoals.length] || null;
   };
 
   if (!mood) {
@@ -82,17 +69,30 @@ const TaskSuggestions = ({ mood, goals, completedTasks, onTaskComplete }: TaskSu
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-800">
-          Today's Suggested Tasks
-        </CardTitle>
-        <CardDescription className="text-gray-600">
-          Based on how you're feeling right now
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold text-gray-800">
+              Your Tasks
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              AI-powered suggestions based on your mood and goals
+            </CardDescription>
+          </div>
+          {activeGoals.length > 0 && (
+            <AITaskGenerator
+              goalId={activeGoals[0].id}
+              mood={mood}
+              goalCategory={activeGoals[0].category}
+              goalTitle={activeGoals[0].title}
+              onTasksGenerated={onTasksGenerated}
+            />
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {suggestedTasks.map((task, index) => {
-          const relatedGoal = getTaskGoal(index);
+        {activeTasks.map((task) => {
           const isCompleted = completedTasks.includes(task.id);
+          const relatedGoal = goals.find(goal => goal.id === task.goal_id);
           
           return (
             <div
@@ -121,14 +121,22 @@ const TaskSuggestions = ({ mood, goals, completedTasks, onTaskComplete }: TaskSu
                   )}
                 </Button>
                 <div className="flex-1 space-y-1">
-                  <p className={`font-medium ${
+                  <div className={`font-medium ${
                     isCompleted ? 'text-green-800 line-through' : 'text-gray-800'
                   }`}>
-                    {task.title}
-                  </p>
+                    <InlineTaskEditor
+                      task={task}
+                      onTaskUpdate={onTaskUpdate}
+                    />
+                  </div>
                   {relatedGoal && (
                     <p className="text-xs text-gray-600">
                       Supports: {relatedGoal.title}
+                    </p>
+                  )}
+                  {task.ai_generated && (
+                    <p className="text-xs text-blue-600 font-medium">
+                      ✨ AI Generated
                     </p>
                   )}
                 </div>
@@ -137,9 +145,9 @@ const TaskSuggestions = ({ mood, goals, completedTasks, onTaskComplete }: TaskSu
           );
         })}
         
-        {suggestedTasks.length === 0 && (
+        {activeTasks.length === 0 && (
           <div className="text-center py-6 text-gray-500">
-            <p className="text-sm">Taking it easy today? That's perfectly okay.</p>
+            <p className="text-sm mb-4">No tasks yet. Generate some AI-powered suggestions!</p>
           </div>
         )}
       </CardContent>

@@ -10,7 +10,11 @@ import DashboardHeader from "./dashboard/DashboardHeader";
 import SickDayMode from "./dashboard/SickDayMode";
 import DashboardLayout from "./dashboard/DashboardLayout";
 import DashboardFooter from "./dashboard/DashboardFooter";
+import { useEncouragement } from "./enhanced/EncouragementSystem";
+import { useSubscription } from "@/hooks/useSubscription";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface Goal {
   id: string;
@@ -25,9 +29,23 @@ export interface Goal {
   timeBound?: string;
 }
 
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  ai_generated: boolean;
+  goal_id?: string;
+}
+
 const Dashboard = () => {
+  const { user } = useAuth();
+  const { showEncouragement } = useEncouragement();
+  const { currentTier, canCreateGoal } = useSubscription();
+  
   const [currentMood, setCurrentMood] = useState<string | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [streak, setStreak] = useState(0);
   const [isSickDay, setIsSickDay] = useState(false);
@@ -37,18 +55,105 @@ const Dashboard = () => {
   const [lastCheckInDate, setLastCheckInDate] = useState<string | null>(null);
   const [dailyReflection, setDailyReflection] = useState<string>('');
 
+  // Load data from Supabase
+  useEffect(() => {
+    if (user) {
+      loadUserData();
+    }
+  }, [user]);
+
+  const loadUserData = async () => {
+    if (!user) return;
+
+    try {
+      // Load goals
+      const { data: goalsData } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (goalsData) {
+        const formattedGoals = goalsData.map(goal => ({
+          id: goal.id.toString(),
+          title: goal.title || goal.goal_text,
+          category: goal.category || 'personal',
+          targetDate: goal.date,
+          completed: goal.completed || false,
+          specific: goal.specific,
+          measurable: goal.measurable,
+          achievable: goal.achievable,
+          relevant: goal.relevant,
+          timeBound: goal.time_bound
+        }));
+        setGoals(formattedGoals);
+      }
+
+      // Load tasks
+      const { data: tasksData } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (tasksData) {
+        setTasks(tasksData);
+        const completed = tasksData.filter(task => task.completed).map(task => task.id);
+        setCompletedTasks(completed);
+      }
+
+      // Load mood entries
+      const today = new Date().toISOString().split('T')[0];
+      const { data: moodData } = await supabase
+        .from('mood_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('date', today)
+        .single();
+
+      if (moodData) {
+        setCurrentMood(moodData.mood);
+        setHasCheckedIn(true);
+        setLastCheckInDate(new Date().toDateString());
+      }
+
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
+
   const getTodayDateString = () => {
     return new Date().toDateString();
   };
 
-  const handleMoodChange = (mood: string) => {
+  const handleMoodChange = async (mood: string) => {
     const today = getTodayDateString();
+    
+    // Save mood to database
+    if (user) {
+      try {
+        const { error } = await supabase
+          .from('mood_entries')
+          .upsert({
+            user_id: user.id,
+            date: new Date().toISOString().split('T')[0],
+            mood: mood
+          });
+
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error saving mood:', error);
+      }
+    }
     
     // Only increment streak if it's a new day and user hasn't checked in today
     if (lastCheckInDate !== today) {
       setCurrentMood(mood);
       setHasCheckedIn(true);
       setLastCheckInDate(today);
+      
+      // Show encouragement for mood check-in
+      showEncouragement('mood_checkin');
       
       // Only increment streak if user has completed at least one task
       if (completedTasks.length > 0) {
@@ -60,35 +165,101 @@ const Dashboard = () => {
     }
   };
 
-  const handleTaskComplete = (tasks: string[]) => {
-    setCompletedTasks(tasks);
+  const handleTaskComplete = async (taskIds: string[]) => {
+    const previousCompletedCount = completedTasks.length;
+    setCompletedTasks(taskIds);
+    
+    // Update tasks in database
+    if (user) {
+      try {
+        // Mark tasks as completed/uncompleted
+        for (const task of tasks) {
+          const shouldBeCompleted = taskIds.includes(task.id);
+          if (task.completed !== shouldBeCompleted) {
+            await supabase
+              .from('tasks')
+              .update({ completed: shouldBeCompleted })
+              .eq('id', task.id);
+          }
+        }
+
+        // Update local state
+        setTasks(prev => prev.map(task => ({
+          ...task,
+          completed: taskIds.includes(task.id)
+        })));
+
+      } catch (error) {
+        console.error('Error updating tasks:', error);
+      }
+    }
+    
+    // Show encouragement for task completion
+    if (taskIds.length > previousCompletedCount) {
+      showEncouragement('task_complete');
+    }
     
     // If user has checked in today and this is their first task completion, increment streak
-    if (hasCheckedIn && lastCheckInDate === getTodayDateString() && completedTasks.length === 0 && tasks.length > 0) {
+    if (hasCheckedIn && lastCheckInDate === getTodayDateString() && previousCompletedCount === 0 && taskIds.length > 0) {
       setStreak(prev => prev + 1);
     }
   };
 
-  const handleGoalComplete = (goalId: string) => {
+  const handleGoalComplete = async (goalId: string) => {
     setGoals(prev => prev.map(goal => 
       goal.id === goalId ? { ...goal, completed: true } : goal
     ));
     
-    // Trigger confetti animation
-    toast({
-      title: "🎉 Goal Completed!",
-      description: "You've accomplished something wonderful. Take a moment to celebrate.",
-    });
+    // Update in database
+    if (user) {
+      try {
+        await supabase
+          .from('goals')
+          .update({ completed: true })
+          .eq('id', goalId);
+      } catch (error) {
+        console.error('Error updating goal:', error);
+      }
+    }
+    
+    // Show encouragement for goal completion
+    showEncouragement('goal_complete');
   };
 
-  const handleSickDay = () => {
+  const handleSickDay = async () => {
     setIsSickDay(true);
-    // Sick day pauses streak but doesn't reset it
-    toast({
-      title: "💙 Taking Care of Yourself",
-      description: "Your wellbeing comes first. Rest easy knowing your streak is safe.",
-    });
+    
+    // Save sick day to preserve streak
+    if (user) {
+      try {
+        await supabase
+          .from('streak_freezes')
+          .insert({
+            user_id: user.id,
+            freeze_date: new Date().toISOString().split('T')[0],
+            reason: 'mental_health_day',
+            notes: 'Sick day taken to preserve streak'
+          });
+      } catch (error) {
+        console.error('Error saving sick day:', error);
+      }
+    }
+    
+    // Show encouragement for taking care of themselves
+    showEncouragement('sick_day');
   };
+
+  const handleTasksGenerated = (newTasks: Task[]) => {
+    setTasks(prev => [...prev, ...newTasks]);
+  };
+
+  const handleTaskUpdate = (taskId: string, newTitle: string) => {
+    setTasks(prev => prev.map(task => 
+      task.id === taskId ? { ...task, title: newTitle } : task
+    ));
+  };
+
+  const activeGoals = goals.filter(goal => !goal.completed);
 
   if (showSettings) {
     return <SettingsPage onBack={() => setShowSettings(false)} userName={userName} />;
@@ -103,6 +274,8 @@ const Dashboard = () => {
       <DashboardHeader 
         userName={userName}
         streak={streak}
+        goalCount={activeGoals.length}
+        goalLimit={currentTier.goalLimit}
         onSickDay={handleSickDay}
         onShowSettings={() => setShowSettings(true)}
       />
@@ -121,6 +294,8 @@ const Dashboard = () => {
               goals={goals} 
               onGoalsChange={setGoals}
               onGoalComplete={handleGoalComplete}
+              canCreateGoal={canCreateGoal(activeGoals.length)}
+              currentTier={currentTier}
             />
           </div>
 
@@ -129,8 +304,11 @@ const Dashboard = () => {
             <TaskSuggestions 
               mood={currentMood}
               goals={goals}
+              tasks={tasks}
               completedTasks={completedTasks}
               onTaskComplete={handleTaskComplete}
+              onTasksGenerated={handleTasksGenerated}
+              onTaskUpdate={handleTaskUpdate}
             />
             
             <ProgressSection 

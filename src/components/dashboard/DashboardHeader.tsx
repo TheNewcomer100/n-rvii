@@ -1,60 +1,72 @@
 
 import { Button } from "@/components/ui/button";
-import { Settings, Flame } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Settings, Heart, Flame } from "lucide-react";
+import FeedbackModal from "../enhanced/FeedbackModal";
 
 interface DashboardHeaderProps {
   userName: string;
   streak: number;
+  goalCount: number;
+  goalLimit: number;
   onSickDay: () => void;
   onShowSettings: () => void;
 }
 
-const DashboardHeader = ({ userName, streak, onSickDay, onShowSettings }: DashboardHeaderProps) => {
-  const welcomeMessages = [
-    "Welcome back, {name}. Let's nurture your focus today.",
-    "Hello, {name}. Ready to tend to your dreams?",
-    "Good to see you, {name}. Your journey continues here.",
-    "Welcome, {name}. Let's create something beautiful today."
-  ];
-
-  const getWelcomeMessage = () => {
-    const message = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
-    return message.replace('{name}', userName);
-  };
+const DashboardHeader = ({ 
+  userName, 
+  streak, 
+  goalCount, 
+  goalLimit, 
+  onSickDay, 
+  onShowSettings 
+}: DashboardHeaderProps) => {
+  const goalLimitText = goalLimit === Infinity ? '∞' : goalLimit.toString();
 
   return (
-    <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10">
-      <div className="max-w-6xl mx-auto px-4 py-4">
+    <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-40">
+      <div className="max-w-6xl mx-auto p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <img 
-              src="/lovable-uploads/b7e84c59-cc69-4b80-9e2c-7969dd1c0c4f.png" 
-              alt="Nrvii Logo" 
-              className="h-8 w-auto"
-            />
-            <div>
-              <h1 className="text-xl font-semibold text-gray-800">Nrvii</h1>
-              <p className="text-sm text-gray-600">{getWelcomeMessage()}</p>
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/lovable-uploads/8c5d43a0-4c58-4d1f-a419-36dd96f5f908.png" 
+                alt="Nrvii Logo" 
+                className="w-8 h-8"
+              />
+              <div>
+                <h1 className="text-xl font-bold text-gray-800">
+                  Hello, {userName}! 👋
+                </h1>
+                <div className="flex items-center space-x-3 text-sm text-gray-600">
+                  <div className="flex items-center space-x-1">
+                    <Flame className="w-4 h-4 text-orange-500" />
+                    <span>{streak} day streak</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {goalCount}/{goalLimitText} goals
+                  </Badge>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2 bg-orange-50 px-3 py-1.5 rounded-full">
-              <Flame className="w-4 h-4 text-orange-500" />
-              <span className="text-sm font-medium text-orange-700">{streak} days</span>
-            </div>
+
+          <div className="flex items-center space-x-2">
+            <FeedbackModal />
             <Button
-              onClick={onSickDay}
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="rounded-xl text-gray-600 border-gray-200 hover:bg-gray-50"
+              onClick={onSickDay}
+              className="text-gray-600 hover:text-gray-800"
             >
+              <Heart className="w-4 h-4 mr-2" />
               Sick Day
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="rounded-xl"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onShowSettings}
+              className="text-gray-600 hover:text-gray-800"
             >
               <Settings className="w-4 h-4" />
             </Button>

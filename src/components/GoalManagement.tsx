@@ -7,16 +7,23 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CheckCircle2, Star, Calendar } from "lucide-react";
+import { CheckCircle2, Star, Calendar, Lock, Crown } from "lucide-react";
 import { Goal } from './Dashboard';
+import { SubscriptionTier } from '@/hooks/useSubscription';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from "@/hooks/use-toast";
 
 interface GoalManagementProps {
   goals: Goal[];
   onGoalsChange: (goals: Goal[]) => void;
   onGoalComplete: (goalId: string) => void;
+  canCreateGoal: boolean;
+  currentTier: SubscriptionTier;
 }
 
-const GoalManagement = ({ goals, onGoalsChange, onGoalComplete }: GoalManagementProps) => {
+const GoalManagement = ({ goals, onGoalsChange, onGoalComplete, canCreateGoal, currentTier }: GoalManagementProps) => {
+  const { user } = useAuth();
   const [isAddingGoal, setIsAddingGoal] = useState(false);
   const [newGoal, setNewGoal] = useState({
     title: '',
@@ -29,38 +36,73 @@ const GoalManagement = ({ goals, onGoalsChange, onGoalComplete }: GoalManagement
     timeBound: ''
   });
 
-  const handleAddGoal = () => {
-    if (newGoal.title && newGoal.category && newGoal.targetDate) {
-      const goal: Goal = {
-        id: Date.now().toString(),
-        title: newGoal.title,
-        category: newGoal.category,
-        targetDate: newGoal.targetDate,
-        completed: false,
-        specific: newGoal.specific,
-        measurable: newGoal.measurable,
-        achievable: newGoal.achievable,
-        relevant: newGoal.relevant,
-        timeBound: newGoal.timeBound
-      };
-      
-      onGoalsChange([...goals, goal]);
-      setNewGoal({ 
-        title: '', 
-        category: '', 
-        targetDate: '',
-        specific: '',
-        measurable: '',
-        achievable: '',
-        relevant: '',
-        timeBound: ''
-      });
-      setIsAddingGoal(false);
+  const handleAddGoal = async () => {
+    if (newGoal.title && newGoal.category && newGoal.targetDate && user) {
+      try {
+        const { data, error } = await supabase
+          .from('goals')
+          .insert({
+            user_id: user.id,
+            title: newGoal.title,
+            goal_text: newGoal.title,
+            category: newGoal.category,
+            date: newGoal.targetDate,
+            priority: 1,
+            specific: newGoal.specific,
+            measurable: newGoal.measurable,
+            achievable: newGoal.achievable,
+            relevant: newGoal.relevant,
+            time_bound: newGoal.timeBound
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        const goal: Goal = {
+          id: data.id.toString(),
+          title: newGoal.title,
+          category: newGoal.category,
+          targetDate: newGoal.targetDate,
+          completed: false,
+          specific: newGoal.specific,
+          measurable: newGoal.measurable,
+          achievable: newGoal.achievable,
+          relevant: newGoal.relevant,
+          timeBound: newGoal.timeBound
+        };
+        
+        onGoalsChange([...goals, goal]);
+        setNewGoal({ 
+          title: '', 
+          category: '', 
+          targetDate: '',
+          specific: '',
+          measurable: '',
+          achievable: '',
+          relevant: '',
+          timeBound: ''
+        });
+        setIsAddingGoal(false);
+
+        toast({
+          title: "🎯 Goal Created!",
+          description: "Your new goal has been added successfully."
+        });
+
+      } catch (error) {
+        console.error('Error creating goal:', error);
+        toast({
+          title: "Error creating goal",
+          description: "Please try again later.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
   const activeGoals = goals.filter(goal => !goal.completed);
-  const canAddGoal = activeGoals.length < 2;
+  const goalLimitText = currentTier.goalLimit === Infinity ? '∞' : currentTier.goalLimit.toString();
 
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
@@ -68,14 +110,17 @@ const GoalManagement = ({ goals, onGoalsChange, onGoalComplete }: GoalManagement
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg font-semibold text-gray-800">
-              Your Current Goals
+              Your Goals
+              {currentTier.tier === 'premium' && (
+                <Crown className="w-4 h-4 ml-2 text-yellow-500 inline" />
+              )}
             </CardTitle>
             <CardDescription className="text-gray-600">
               Focus on what matters most
             </CardDescription>
           </div>
           <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-            {activeGoals.length}/2
+            {activeGoals.length}/{goalLimitText}
           </Badge>
         </div>
       </CardHeader>
@@ -120,7 +165,7 @@ const GoalManagement = ({ goals, onGoalsChange, onGoalComplete }: GoalManagement
           </div>
         )}
 
-        {canAddGoal ? (
+        {canCreateGoal ? (
           <Dialog open={isAddingGoal} onOpenChange={setIsAddingGoal}>
             <DialogTrigger asChild>
               <Button 
@@ -225,13 +270,26 @@ const GoalManagement = ({ goals, onGoalsChange, onGoalComplete }: GoalManagement
             </DialogContent>
           </Dialog>
         ) : (
-          <div className="text-center p-4 bg-blue-50 rounded-2xl">
-            <p className="text-sm text-blue-800 font-medium">
-              You're focusing on what matters most. ✨
+          <div className="text-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-100">
+            <Lock className="w-6 h-6 mx-auto mb-2 text-blue-600" />
+            <p className="text-sm text-blue-800 font-medium mb-1">
+              Goal limit reached
             </p>
-            <p className="text-xs text-blue-600 mt-1">
-              Complete a goal to add another
+            <p className="text-xs text-blue-600 mb-3">
+              {currentTier.tier === 'free' 
+                ? 'Upgrade to Premium for unlimited goals' 
+                : 'Complete a goal to add another'
+              }
             </p>
+            {currentTier.tier === 'free' && (
+              <Button 
+                size="sm"
+                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl"
+              >
+                <Crown className="w-3 h-3 mr-1" />
+                Upgrade to Premium
+              </Button>
+            )}
           </div>
         )}
       </CardContent>
