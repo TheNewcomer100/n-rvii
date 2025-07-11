@@ -1,18 +1,13 @@
 
-import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CheckCircle2, Star, Calendar, Lock, Crown } from "lucide-react";
-import { Goal } from './Dashboard';
-import { SubscriptionTier } from '@/hooks/useSubscription';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
+import { Calendar, Plus, Target, CheckCircle2, Star } from "lucide-react";
+import { useState } from "react";
+import { Goal } from "@/types/dashboard";
+import { SubscriptionTier } from "@/hooks/useSubscription";
 
 interface GoalManagementProps {
   goals: Goal[];
@@ -22,274 +17,191 @@ interface GoalManagementProps {
   currentTier: SubscriptionTier;
 }
 
-const GoalManagement = ({ goals, onGoalsChange, onGoalComplete, canCreateGoal, currentTier }: GoalManagementProps) => {
-  const { user } = useAuth();
-  const [isAddingGoal, setIsAddingGoal] = useState(false);
-  const [newGoal, setNewGoal] = useState({
-    title: '',
-    category: '',
-    targetDate: '',
-    specific: '',
-    measurable: '',
-    achievable: '',
-    relevant: '',
-    timeBound: ''
-  });
+const GoalManagement = ({ 
+  goals, 
+  onGoalsChange, 
+  onGoalComplete, 
+  canCreateGoal,
+  currentTier 
+}: GoalManagementProps) => {
+  const [newGoal, setNewGoal] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
 
-  const handleAddGoal = async () => {
-    if (newGoal.title && newGoal.category && newGoal.targetDate && user) {
-      try {
-        const { data, error } = await supabase
-          .from('goals')
-          .insert({
-            user_id: user.id,
-            title: newGoal.title,
-            goal_text: newGoal.title,
-            category: newGoal.category,
-            date: newGoal.targetDate,
-            priority: 1,
-            specific: newGoal.specific,
-            measurable: newGoal.measurable,
-            achievable: newGoal.achievable,
-            relevant: newGoal.relevant,
-            time_bound: newGoal.timeBound
-          })
-          .select()
-          .single();
+  const activeGoals = goals.filter(goal => !goal.completed);
+  const completedGoals = goals.filter(goal => goal.completed);
 
-        if (error) throw error;
-
-        const goal: Goal = {
-          id: data.id.toString(),
-          title: newGoal.title,
-          category: newGoal.category,
-          targetDate: newGoal.targetDate,
-          completed: false,
-          specific: newGoal.specific,
-          measurable: newGoal.measurable,
-          achievable: newGoal.achievable,
-          relevant: newGoal.relevant,
-          timeBound: newGoal.timeBound
-        };
-        
-        onGoalsChange([...goals, goal]);
-        setNewGoal({ 
-          title: '', 
-          category: '', 
-          targetDate: '',
-          specific: '',
-          measurable: '',
-          achievable: '',
-          relevant: '',
-          timeBound: ''
-        });
-        setIsAddingGoal(false);
-
-        toast({
-          title: "🎯 Goal Created!",
-          description: "Your new goal has been added successfully."
-        });
-
-      } catch (error) {
-        console.error('Error creating goal:', error);
-        toast({
-          title: "Error creating goal",
-          description: "Please try again later.",
-          variant: "destructive"
-        });
-      }
+  const handleAddGoal = () => {
+    if (newGoal.trim() && canCreateGoal) {
+      const goal: Goal = {
+        id: Date.now().toString(),
+        title: newGoal.trim(),
+        category: 'personal',
+        targetDate: new Date().toISOString().split('T')[0],
+        completed: false,
+        specific: '',
+        measurable: '',
+        achievable: '',
+        relevant: '',
+        timeBound: ''
+      };
+      
+      onGoalsChange([...goals, goal]);
+      setNewGoal('');
+      setShowAddForm(false);
     }
   };
 
-  const activeGoals = goals.filter(goal => !goal.completed);
-  const goalLimitText = currentTier.goalLimit === Infinity ? '∞' : currentTier.goalLimit.toString();
+  const handleCompleteGoal = (goalId: string) => {
+    onGoalComplete(goalId);
+  };
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
-      <CardHeader>
+    <Card className="bg-gradient-to-br from-purple-50/80 to-blue-50/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-purple-100/50 to-blue-100/50">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg font-semibold text-gray-800">
-              Your Goals
-              {currentTier.tier === 'premium' && (
-                <Crown className="w-4 h-4 ml-2 text-yellow-500 inline" />
-              )}
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              Focus on what matters most
-            </CardDescription>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-blue-400 rounded-2xl flex items-center justify-center">
+              <Target className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-semibold text-gray-800">
+                Your Goals
+              </CardTitle>
+              <CardDescription className="text-gray-600">
+                {activeGoals.length} active • {completedGoals.length} completed
+              </CardDescription>
+            </div>
           </div>
-          <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-            {activeGoals.length}/{goalLimitText}
-          </Badge>
+          
+          {canCreateGoal && (
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              size="sm"
+              className="rounded-2xl bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Add Goal
+            </Button>
+          )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {activeGoals.map((goal) => (
-          <div
-            key={goal.id}
-            className="p-4 border border-gray-200 rounded-2xl hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-start justify-between">
-              <div className="space-y-1 flex-1">
-                <h4 className="font-medium text-gray-800">{goal.title}</h4>
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Badge variant="outline" className="text-xs">
-                    {goal.category}
-                  </Badge>
-                  <div className="flex items-center space-x-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>{new Date(goal.targetDate).toLocaleDateString()}</span>
-                  </div>
-                </div>
-                {goal.relevant && (
-                  <p className="text-xs text-gray-500 mt-1">Why: {goal.relevant}</p>
-                )}
-              </div>
+
+      <CardContent className="p-6 space-y-4">
+        {/* Add Goal Form */}
+        {showAddForm && (
+          <div className="p-4 bg-white/60 rounded-2xl border border-purple-100 space-y-3">
+            <Input
+              placeholder="What would you like to achieve?"
+              value={newGoal}
+              onChange={(e) => setNewGoal(e.target.value)}
+              className="rounded-xl border-purple-200 focus:border-purple-400 bg-white/80"
+              onKeyPress={(e) => e.key === 'Enter' && handleAddGoal()}
+            />
+            <div className="flex space-x-2">
               <Button
+                onClick={handleAddGoal}
                 size="sm"
-                variant="ghost"
-                onClick={() => onGoalComplete(goal.id)}
-                className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                className="rounded-xl bg-gradient-to-r from-green-400 to-blue-400 hover:from-green-500 hover:to-blue-500 text-white"
+                disabled={!newGoal.trim()}
               >
-                <CheckCircle2 className="w-4 h-4" />
+                <Star className="w-4 h-4 mr-1" />
+                Create Goal
+              </Button>
+              <Button
+                onClick={() => setShowAddForm(false)}
+                size="sm"
+                variant="outline"
+                className="rounded-xl border-gray-200 text-gray-600 hover:bg-gray-50"
+              >
+                Cancel
               </Button>
             </div>
           </div>
-        ))}
+        )}
 
-        {activeGoals.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            <Star className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-            <p className="text-sm">Ready to set your first goal?</p>
+        {/* Goal Limit Warning */}
+        {!canCreateGoal && (
+          <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200">
+            <p className="text-sm text-amber-800 font-medium">
+              🎯 Goal limit reached ({currentTier.goalLimit} goals)
+            </p>
+            <p className="text-xs text-amber-700 mt-1">
+              Complete or upgrade to add more goals
+            </p>
           </div>
         )}
 
-        {canCreateGoal ? (
-          <Dialog open={isAddingGoal} onOpenChange={setIsAddingGoal}>
-            <DialogTrigger asChild>
-              <Button 
-                className="w-full rounded-xl bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white"
-              >
-                Add Goal
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="rounded-3xl max-w-2xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create a SMART Goal</DialogTitle>
-                <DialogDescription>
-                  Let's make your goal Specific, Measurable, Achievable, Relevant, and Time-bound
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="title">Goal Title</Label>
-                    <Input
-                      id="title"
-                      placeholder="e.g., Launch my creative project"
-                      value={newGoal.title}
-                      onChange={(e) => setNewGoal(prev => ({ ...prev, title: e.target.value }))}
-                      className="rounded-xl"
-                    />
+        {/* Active Goals */}
+        <div className="space-y-3">
+          {activeGoals.map((goal) => (
+            <div
+              key={goal.id}
+              className="p-4 bg-white/70 rounded-2xl border border-blue-100 hover:shadow-md transition-all duration-200"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-800 mb-2">{goal.title}</h4>
+                  
+                  <div className="flex items-center space-x-4 text-sm text-gray-600">
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="w-4 h-4 text-blue-400" />
+                      <span>{new Date(goal.targetDate).toLocaleDateString()}</span>
+                    </div>
+                    <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 text-xs">
+                      {goal.category}
+                    </Badge>
                   </div>
-                  <div>
-                    <Label htmlFor="category">Category</Label>
-                    <Input
-                      id="category"
-                      placeholder="e.g., Creative, Health, Learning"
-                      value={newGoal.category}
-                      onChange={(e) => setNewGoal(prev => ({ ...prev, category: e.target.value }))}
-                      className="rounded-xl"
-                    />
+                  
+                  {/* Progress placeholder */}
+                  <div className="mt-3">
+                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                      <span>Progress</span>
+                      <span>25%</span>
+                    </div>
+                    <Progress value={25} className="h-2" />
                   </div>
                 </div>
-
-                <div>
-                  <Label htmlFor="specific">Specific - What exactly do you want to accomplish?</Label>
-                  <Textarea
-                    id="specific"
-                    placeholder="Be specific about what you want to achieve..."
-                    value={newGoal.specific}
-                    onChange={(e) => setNewGoal(prev => ({ ...prev, specific: e.target.value }))}
-                    className="rounded-xl"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="measurable">Measurable - How will you track progress?</Label>
-                  <Textarea
-                    id="measurable"
-                    placeholder="What metrics or milestones will you use?"
-                    value={newGoal.measurable}
-                    onChange={(e) => setNewGoal(prev => ({ ...prev, measurable: e.target.value }))}
-                    className="rounded-xl"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="achievable">Achievable - Is this realistic for you right now?</Label>
-                  <Textarea
-                    id="achievable"
-                    placeholder="Consider your current resources and constraints..."
-                    value={newGoal.achievable}
-                    onChange={(e) => setNewGoal(prev => ({ ...prev, achievable: e.target.value }))}
-                    className="rounded-xl"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="relevant">Relevant - Why does this goal matter to you?</Label>
-                  <Textarea
-                    id="relevant"
-                    placeholder="How does this align with your values and long-term vision?"
-                    value={newGoal.relevant}
-                    onChange={(e) => setNewGoal(prev => ({ ...prev, relevant: e.target.value }))}
-                    className="rounded-xl"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="targetDate">Time-bound - When will you complete this?</Label>
-                  <Input
-                    id="targetDate"
-                    type="date"
-                    value={newGoal.targetDate}
-                    onChange={(e) => setNewGoal(prev => ({ ...prev, targetDate: e.target.value }))}
-                    className="rounded-xl"
-                  />
-                </div>
-
-                <Button 
-                  onClick={handleAddGoal}
-                  className="w-full rounded-xl bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600"
+                
+                <Button
+                  onClick={() => handleCompleteGoal(goal.id)}
+                  size="sm"
+                  className="ml-4 rounded-xl bg-gradient-to-r from-green-400 to-emerald-400 hover:from-green-500 hover:to-emerald-500 text-white"
                 >
-                  Create Goal
+                  <CheckCircle2 className="w-4 h-4" />
                 </Button>
               </div>
-            </DialogContent>
-          </Dialog>
-        ) : (
-          <div className="text-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-100">
-            <Lock className="w-6 h-6 mx-auto mb-2 text-blue-600" />
-            <p className="text-sm text-blue-800 font-medium mb-1">
-              Goal limit reached
+            </div>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {activeGoals.length === 0 && (
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+              <Target className="w-8 h-8 text-purple-400" />
+            </div>
+            <p className="text-gray-600 mb-2">No active goals yet</p>
+            <p className="text-sm text-gray-500">
+              Start by creating your first goal to track your progress
             </p>
-            <p className="text-xs text-blue-600 mb-3">
-              {currentTier.tier === 'free' 
-                ? 'Upgrade to Premium for unlimited goals' 
-                : 'Complete a goal to add another'
-              }
+          </div>
+        )}
+
+        {/* Completed Goals Preview */}
+        {completedGoals.length > 0 && (
+          <div className="pt-4 border-t border-purple-100">
+            <p className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <Star className="w-4 h-4 text-yellow-500 mr-2" />
+              Recent Achievements
             </p>
-            {currentTier.tier === 'free' && (
-              <Button 
-                size="sm"
-                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl"
-              >
-                <Crown className="w-3 h-3 mr-1" />
-                Upgrade to Premium
-              </Button>
-            )}
+            <div className="space-y-2">
+              {completedGoals.slice(0, 2).map((goal) => (
+                <div key={goal.id} className="flex items-center space-x-2 text-sm text-gray-600">
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  <span className="line-through">{goal.title}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </CardContent>

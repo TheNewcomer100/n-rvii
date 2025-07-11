@@ -73,7 +73,7 @@ export const useDashboardHandlers = ({
       
       // Only increment streak if user has completed at least one task
       if (completedTasks.length > 0) {
-        setStreak(prev => prev + 1);
+        setStreak((prevStreak: number) => prevStreak + 1);
       }
     } else {
       // Just update mood if already checked in today
@@ -100,7 +100,7 @@ export const useDashboardHandlers = ({
         }
 
         // Update local state
-        setTasks(prev => prev.map(task => ({
+        setTasks((prevTasks: Task[]) => prevTasks.map(task => ({
           ...task,
           completed: taskIds.includes(task.id)
         })));
@@ -117,12 +117,12 @@ export const useDashboardHandlers = ({
     
     // If user has checked in today and this is their first task completion, increment streak
     if (hasCheckedIn && lastCheckInDate === getTodayDateString() && previousCompletedCount === 0 && taskIds.length > 0) {
-      setStreak(prev => prev + 1);
+      setStreak((prevStreak: number) => prevStreak + 1);
     }
   };
 
   const handleGoalComplete = async (goalId: string) => {
-    setGoals(prev => prev.map(goal => 
+    setGoals((prevGoals: Goal[]) => prevGoals.map(goal => 
       goal.id === goalId ? { ...goal, completed: true } : goal
     ));
     
@@ -143,11 +143,11 @@ export const useDashboardHandlers = ({
   };
 
   const handleTasksGenerated = (newTasks: Task[]) => {
-    setTasks(prev => [...prev, ...newTasks]);
+    setTasks((prevTasks: Task[]) => [...prevTasks, ...newTasks]);
   };
 
   const handleTaskUpdate = async (taskId: string, newTitle: string) => {
-    setTasks(prev => prev.map(task => 
+    setTasks((prevTasks: Task[]) => prevTasks.map(task => 
       task.id === taskId ? { ...task, title: newTitle } : task
     ));
 

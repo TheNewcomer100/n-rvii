@@ -1,8 +1,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle } from "lucide-react";
-import { Goal, Task } from './Dashboard';
+import { CheckCircle2, Circle, Sparkles, Edit3 } from "lucide-react";
+import { Goal, Task } from '@/types/dashboard';
 import AITaskGenerator from './enhanced/AITaskGenerator';
 import InlineTaskEditor from './enhanced/InlineTaskEditor';
 
@@ -38,8 +38,11 @@ const TaskSuggestions = ({
 
   if (!mood) {
     return (
-      <Card className="bg-white/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
-        <CardHeader className="text-center">
+      <Card className="bg-gradient-to-br from-green-50/80 to-blue-50/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
+        <CardHeader className="text-center py-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-blue-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+            <Sparkles className="w-8 h-8 text-green-400" />
+          </div>
           <CardTitle className="text-lg font-semibold text-gray-800">
             Ready for Today's Tasks?
           </CardTitle>
@@ -53,8 +56,11 @@ const TaskSuggestions = ({
 
   if (activeGoals.length === 0) {
     return (
-      <Card className="bg-white/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
-        <CardHeader className="text-center">
+      <Card className="bg-gradient-to-br from-purple-50/80 to-pink-50/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
+        <CardHeader className="text-center py-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+            <Edit3 className="w-8 h-8 text-purple-400" />
+          </div>
           <CardTitle className="text-lg font-semibold text-gray-800">
             Set Your Goals First
           </CardTitle>
@@ -67,16 +73,21 @@ const TaskSuggestions = ({
   }
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
-      <CardHeader>
+    <Card className="bg-gradient-to-br from-blue-50/80 to-green-50/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-blue-100/50 to-green-100/50">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg font-semibold text-gray-800">
-              Your Tasks
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              AI-powered suggestions based on your mood and goals
-            </CardDescription>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-green-400 rounded-2xl flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-semibold text-gray-800">
+                Your Tasks
+              </CardTitle>
+              <CardDescription className="text-gray-600">
+                AI-powered suggestions based on your mood and goals
+              </CardDescription>
+            </div>
           </div>
           {activeGoals.length > 0 && (
             <AITaskGenerator
@@ -89,7 +100,7 @@ const TaskSuggestions = ({
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="p-6 space-y-3">
         {activeTasks.map((task) => {
           const isCompleted = completedTasks.includes(task.id);
           const relatedGoal = goals.find(goal => goal.id === task.goal_id);
@@ -97,10 +108,10 @@ const TaskSuggestions = ({
           return (
             <div
               key={task.id}
-              className={`p-4 border rounded-2xl transition-all duration-200 ${
+              className={`p-4 rounded-2xl transition-all duration-300 hover:shadow-md ${
                 isCompleted 
-                  ? 'bg-green-50 border-green-200' 
-                  : 'border-gray-200 hover:shadow-md hover:border-gray-300'
+                  ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200' 
+                  : 'bg-white/70 border-2 border-blue-100 hover:border-blue-200'
               }`}
             >
               <div className="flex items-start space-x-3">
@@ -108,10 +119,10 @@ const TaskSuggestions = ({
                   size="sm"
                   variant="ghost"
                   onClick={() => handleTaskToggle(task.id)}
-                  className={`mt-0.5 p-1 ${
+                  className={`mt-0.5 p-1 rounded-xl transition-all duration-200 ${
                     isCompleted 
-                      ? 'text-green-600 hover:text-green-700' 
-                      : 'text-gray-400 hover:text-gray-600'
+                      ? 'text-green-600 hover:text-green-700 bg-green-100' 
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-blue-50'
                   }`}
                 >
                   {isCompleted ? (
@@ -120,8 +131,8 @@ const TaskSuggestions = ({
                     <Circle className="w-5 h-5" />
                   )}
                 </Button>
-                <div className="flex-1 space-y-1">
-                  <div className={`font-medium ${
+                <div className="flex-1 space-y-2">
+                  <div className={`font-medium transition-all duration-200 ${
                     isCompleted ? 'text-green-800 line-through' : 'text-gray-800'
                   }`}>
                     <InlineTaskEditor
@@ -130,12 +141,12 @@ const TaskSuggestions = ({
                     />
                   </div>
                   {relatedGoal && (
-                    <p className="text-xs text-gray-600">
-                      Supports: {relatedGoal.title}
+                    <p className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-lg inline-block">
+                      📌 Supports: {relatedGoal.title}
                     </p>
                   )}
                   {task.ai_generated && (
-                    <p className="text-xs text-blue-600 font-medium">
+                    <p className="text-xs text-purple-600 font-medium bg-purple-50 px-2 py-1 rounded-lg inline-block">
                       ✨ AI Generated
                     </p>
                   )}
@@ -146,8 +157,12 @@ const TaskSuggestions = ({
         })}
         
         {activeTasks.length === 0 && (
-          <div className="text-center py-6 text-gray-500">
-            <p className="text-sm mb-4">No tasks yet. Generate some AI-powered suggestions!</p>
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-green-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-8 h-8 text-blue-400" />
+            </div>
+            <p className="text-gray-600 mb-2">No tasks yet</p>
+            <p className="text-sm text-gray-500 mb-4">Generate some AI-powered suggestions!</p>
           </div>
         )}
       </CardContent>

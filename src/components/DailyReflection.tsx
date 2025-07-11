@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart } from "lucide-react";
+import { Heart, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface DailyReflectionProps {
@@ -42,14 +42,16 @@ const DailyReflection = ({ reflection, onReflectionChange, canReflect }: DailyRe
 
   if (!canReflect) {
     return (
-      <Card className="bg-white/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
-        <CardHeader className="text-center">
+      <Card className="bg-gradient-to-br from-pink-50/80 to-purple-50/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
+        <CardHeader className="text-center py-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-pink-100 to-purple-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+            <Heart className="w-8 h-8 text-pink-400" />
+          </div>
           <CardTitle className="text-lg font-semibold text-gray-800 flex items-center justify-center space-x-2">
-            <Heart className="w-5 h-5 text-pink-500" />
             <span>Daily Reflection</span>
           </CardTitle>
           <CardDescription className="text-gray-600">
-            Complete at least one task to unlock your daily reflection
+            Complete at least one task to unlock your daily reflection 🌟
           </CardDescription>
         </CardHeader>
       </Card>
@@ -57,27 +59,31 @@ const DailyReflection = ({ reflection, onReflectionChange, canReflect }: DailyRe
   }
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
-      <CardHeader>
+    <Card className="bg-gradient-to-br from-purple-50/80 to-pink-50/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-purple-100/50 to-pink-100/50">
         <CardTitle className="text-lg font-semibold text-gray-800 flex items-center space-x-2">
-          <Heart className="w-5 h-5 text-pink-500" />
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl flex items-center justify-center">
+            <Heart className="w-4 h-4 text-white" />
+          </div>
           <span>Daily Reflection</span>
         </CardTitle>
         <CardDescription className="text-gray-600">
-          How are you feeling about today? Share a thought or choose an emoji.
+          How are you feeling about today? Share a thought or choose an emoji. 🌸
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="p-6 space-y-6">
         {/* Emoji Selection */}
         <div>
-          <p className="text-sm text-gray-600 mb-2">Choose a feeling:</p>
+          <p className="text-sm text-gray-600 mb-3 font-medium">Choose a feeling:</p>
           <div className="flex flex-wrap gap-2">
             {moodEmojis.map((emoji, index) => (
               <button
                 key={index}
                 onClick={() => handleEmojiSelect(emoji)}
-                className={`w-12 h-12 text-2xl hover:scale-110 transition-all duration-200 rounded-xl hover:bg-gray-50 ${
-                  selectedEmoji === emoji ? 'bg-blue-50 ring-2 ring-blue-300' : ''
+                className={`w-12 h-12 text-2xl hover:scale-110 transition-all duration-200 rounded-2xl hover:shadow-md ${
+                  selectedEmoji === emoji 
+                    ? 'bg-gradient-to-br from-purple-100 to-pink-100 ring-2 ring-purple-300 shadow-lg' 
+                    : 'hover:bg-gradient-to-br hover:from-purple-50 hover:to-pink-50'
                 }`}
               >
                 {emoji}
@@ -92,10 +98,10 @@ const DailyReflection = ({ reflection, onReflectionChange, canReflect }: DailyRe
             placeholder="One line about your day... (optional)"
             value={reflectionText.replace(selectedEmoji, '').trim()}
             onChange={(e) => handleTextChange(e.target.value)}
-            className="rounded-xl border-gray-200 focus:border-blue-400"
+            className="rounded-2xl border-purple-200 focus:border-purple-400 bg-white/80 p-4"
             maxLength={120}
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 mt-2 text-right">
             {120 - (reflectionText.replace(selectedEmoji, '').trim().length)} characters remaining
           </p>
         </div>
@@ -105,21 +111,25 @@ const DailyReflection = ({ reflection, onReflectionChange, canReflect }: DailyRe
           <div className="flex justify-end">
             <Button
               onClick={handleSaveReflection}
-              className="rounded-xl bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white"
+              className="rounded-2xl bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white px-6 py-3 font-medium"
             >
+              <Sparkles className="w-4 h-4 mr-2" />
               Save Reflection
             </Button>
           </div>
         )}
 
         {/* Weekly Summary Preview */}
-        <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl">
-          <p className="text-sm font-medium text-gray-800 mb-2">This Week's Reflections</p>
-          <div className="space-y-1">
-            <div className="text-xs text-gray-600">Mon: ✨ Felt energized after morning walk</div>
-            <div className="text-xs text-gray-600">Tue: 😌 Peaceful day, grateful for small wins</div>
-            <div className="text-xs text-gray-600">Wed: 🌱 Growing stronger each day</div>
-            <div className="text-xs text-gray-600">
+        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl border-2 border-blue-100">
+          <p className="text-sm font-bold text-gray-800 mb-4 flex items-center">
+            <Sparkles className="w-4 h-4 mr-2 text-blue-500" />
+            This Week's Reflections
+          </p>
+          <div className="space-y-2">
+            <div className="text-xs text-gray-600 p-2 bg-white/60 rounded-lg">Mon: ✨ Felt energized after morning walk</div>
+            <div className="text-xs text-gray-600 p-2 bg-white/60 rounded-lg">Tue: 😌 Peaceful day, grateful for small wins</div>
+            <div className="text-xs text-gray-600 p-2 bg-white/60 rounded-lg">Wed: 🌱 Growing stronger each day</div>
+            <div className="text-xs text-gray-700 p-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg font-medium">
               Today: {selectedEmoji} {reflectionText.replace(selectedEmoji, '').trim() || 'Not reflected yet'}
             </div>
           </div>
