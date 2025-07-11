@@ -433,6 +433,7 @@ export type Database = {
       }
       tasks: {
         Row: {
+          ai_generated: boolean | null
           completed: boolean | null
           created_at: string | null
           date: string
@@ -441,12 +442,14 @@ export type Database = {
           estimated_duration: number | null
           goal_id: string | null
           id: string
+          mood_context: string | null
           priority_score: number | null
           title: string
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          ai_generated?: boolean | null
           completed?: boolean | null
           created_at?: string | null
           date: string
@@ -455,12 +458,14 @@ export type Database = {
           estimated_duration?: number | null
           goal_id?: string | null
           id?: string
+          mood_context?: string | null
           priority_score?: number | null
           title: string
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          ai_generated?: boolean | null
           completed?: boolean | null
           created_at?: string | null
           date?: string
@@ -469,6 +474,7 @@ export type Database = {
           estimated_duration?: number | null
           goal_id?: string | null
           id?: string
+          mood_context?: string | null
           priority_score?: number | null
           title?: string
           updated_at?: string | null

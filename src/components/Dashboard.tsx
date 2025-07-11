@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import MoodCheckIn from "./MoodCheckIn";
 import GoalManagement from "./GoalManagement";
@@ -90,7 +89,7 @@ const Dashboard = () => {
         setGoals(formattedGoals);
       }
 
-      // Load tasks
+      // Load tasks with proper type mapping
       const { data: tasksData } = await supabase
         .from('tasks')
         .select('*')
@@ -101,11 +100,11 @@ const Dashboard = () => {
         const formattedTasks = tasksData.map(task => ({
           id: task.id,
           title: task.title,
-          description: task.description,
+          description: task.description || undefined,
           completed: task.completed || false,
           ai_generated: task.ai_generated || false,
-          goal_id: task.goal_id,
-          mood_context: task.mood_context
+          goal_id: task.goal_id || undefined,
+          mood_context: task.mood_context || undefined
         }));
         setTasks(formattedTasks);
         const completed = formattedTasks.filter(task => task.completed).map(task => task.id);
