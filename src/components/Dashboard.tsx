@@ -36,6 +36,7 @@ export interface Task {
   completed: boolean;
   ai_generated: boolean;
   goal_id?: string;
+  mood_context?: string;
 }
 
 const Dashboard = () => {
@@ -97,8 +98,17 @@ const Dashboard = () => {
         .order('created_at', { ascending: false });
 
       if (tasksData) {
-        setTasks(tasksData);
-        const completed = tasksData.filter(task => task.completed).map(task => task.id);
+        const formattedTasks = tasksData.map(task => ({
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          completed: task.completed || false,
+          ai_generated: task.ai_generated || false,
+          goal_id: task.goal_id,
+          mood_context: task.mood_context
+        }));
+        setTasks(formattedTasks);
+        const completed = formattedTasks.filter(task => task.completed).map(task => task.id);
         setCompletedTasks(completed);
       }
 
@@ -216,7 +226,7 @@ const Dashboard = () => {
         await supabase
           .from('goals')
           .update({ completed: true })
-          .eq('id', goalId);
+          .eq('id', parseInt(goalId));
       } catch (error) {
         console.error('Error updating goal:', error);
       }
@@ -229,22 +239,6 @@ const Dashboard = () => {
   const handleSickDay = async () => {
     setIsSickDay(true);
     
-    // Save sick day to preserve streak
-    if (user) {
-      try {
-        await supabase
-          .from('streak_freezes')
-          .insert({
-            user_id: user.id,
-            freeze_date: new Date().toISOString().split('T')[0],
-            reason: 'mental_health_day',
-            notes: 'Sick day taken to preserve streak'
-          });
-      } catch (error) {
-        console.error('Error saving sick day:', error);
-      }
-    }
-    
     // Show encouragement for taking care of themselves
     showEncouragement('sick_day');
   };
@@ -253,10 +247,22 @@ const Dashboard = () => {
     setTasks(prev => [...prev, ...newTasks]);
   };
 
-  const handleTaskUpdate = (taskId: string, newTitle: string) => {
+  const handleTaskUpdate = async (taskId: string, newTitle: string) => {
     setTasks(prev => prev.map(task => 
       task.id === taskId ? { ...task, title: newTitle } : task
     ));
+
+    // Update in database
+    if (user) {
+      try {
+        await supabase
+          .from('tasks')
+          .update({ title: newTitle })
+          .eq('id', taskId);
+      } catch (error) {
+        console.error('Error updating task:', error);
+      }
+    }
   };
 
   const activeGoals = goals.filter(goal => !goal.completed);
