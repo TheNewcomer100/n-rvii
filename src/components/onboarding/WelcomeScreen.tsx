@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Shield, Users, Sparkles } from "lucide-react";
+import { Heart, Shield, Users, Sparkles, Star, Zap } from "lucide-react";
 
 interface WelcomeScreenProps {
   onNext: () => void;
@@ -13,106 +13,115 @@ const WelcomeScreen = ({ onNext, onSkipToGuest }: WelcomeScreenProps) => {
   const [showVideo, setShowVideo] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl space-y-8">
         {/* Logo and Brand */}
         <div className="text-center space-y-6">
           <div className="flex justify-center">
-            <img 
-              src="/lovable-uploads/b7e84c59-cc69-4b80-9e2c-7969dd1c0c4f.png" 
-              alt="Nrvii Logo" 
-              className="h-16 w-auto"
-            />
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-400 via-blue-400 to-green-400 rounded-3xl flex items-center justify-center p-4 shadow-lg animate-pulse">
+              <img 
+                src="/lovable-uploads/2eadcba7-72a9-45a1-ac44-c612b69aabbd.png" 
+                alt="Nrvii Logo" 
+                className="w-full h-full object-contain"
+              />
+            </div>
           </div>
           <div className="space-y-4">
-            <h1 className="text-3xl font-bold text-gray-800 leading-tight">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-green-600 bg-clip-text text-transparent leading-tight">
               Welcome to Your Mental Health & Productivity Sanctuary
             </h1>
-            <p className="text-lg text-gray-600 max-w-xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-xl mx-auto leading-relaxed">
               Turn your many passions into sustainable success while honoring your mental health journey. 
-              You belong here. Your energy matters.
+              You belong here. Your energy matters. 🌱✨
             </p>
           </div>
         </div>
 
         {/* Mission Statement Card */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 rounded-3xl shadow-lg">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl font-semibold text-gray-800 flex items-center justify-center gap-2">
-              <Heart className="w-5 h-5 text-red-400" />
+        <Card className="bg-white/90 backdrop-blur-lg border-0 rounded-3xl shadow-xl overflow-hidden">
+          <CardHeader className="text-center pb-6 bg-gradient-to-r from-purple-100/60 via-blue-100/60 to-green-100/60">
+            <CardTitle className="text-2xl font-semibold text-gray-800 flex items-center justify-center gap-3">
+              <Heart className="w-6 h-6 text-red-400" />
               Our Promise to You
+              <Sparkles className="w-6 h-6 text-purple-400" />
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                  <Shield className="w-6 h-6 text-blue-600" />
+          <CardContent className="space-y-8 p-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center space-y-4 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl border-2 border-blue-200">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl flex items-center justify-center mx-auto shadow-lg">
+                  <Shield className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="font-medium text-gray-800">Privacy First</h3>
-                <p className="text-sm text-gray-600">Your data stays yours. Anonymous options available.</p>
+                <h3 className="font-bold text-gray-800 text-lg">Privacy First</h3>
+                <p className="text-gray-600 leading-relaxed">Your data stays yours. Anonymous options available for complete peace of mind.</p>
               </div>
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                  <Users className="w-6 h-6 text-green-600" />
+              <div className="text-center space-y-4 p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-3xl border-2 border-green-200">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-3xl flex items-center justify-center mx-auto shadow-lg">
+                  <Users className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="font-medium text-gray-800">Compassionate Community</h3>
-                <p className="text-sm text-gray-600">Safe space for support and encouragement.</p>
+                <h3 className="font-bold text-gray-800 text-lg">Compassionate Community</h3>
+                <p className="text-gray-600 leading-relaxed">Safe space for support, encouragement, and understanding without judgment.</p>
               </div>
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
-                  <Sparkles className="w-6 h-6 text-purple-600" />
+              <div className="text-center space-y-4 p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-3xl border-2 border-purple-200">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-3xl flex items-center justify-center mx-auto shadow-lg">
+                  <Zap className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="font-medium text-gray-800">Sustainable Growth</h3>
-                <p className="text-sm text-gray-600">Progress without pressure. Rest is productive.</p>
+                <h3 className="font-bold text-gray-800 text-lg">Sustainable Growth</h3>
+                <p className="text-gray-600 leading-relaxed">Progress without pressure. Rest is productive. Honor your energy cycles.</p>
               </div>
             </div>
 
             {/* Founder Message */}
-            <div className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-2xl">
+            <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-green-50 p-8 rounded-3xl border-2 border-purple-100">
               {!showVideo ? (
-                <div className="text-center space-y-4">
-                  <p className="text-gray-700 italic">
+                <div className="text-center space-y-6">
+                  <p className="text-gray-700 italic text-lg leading-relaxed">
                     "As someone who has navigated ADHD, anxiety, and the pressure to 'do it all,' 
-                    I created Nrvii to be the app I wish I had during my darkest moments."
+                    I created Nrvii to be the app I wish I had during my darkest moments. You're not alone in this journey."
                   </p>
                   <Button
                     onClick={() => setShowVideo(true)}
                     variant="outline"
-                    size="sm"
-                    className="rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50"
+                    className="rounded-2xl border-2 border-purple-200 text-purple-700 hover:bg-purple-50 px-8 py-4 font-medium transition-all duration-200 hover:shadow-lg"
                   >
+                    <Star className="w-5 h-5 mr-2" />
                     Watch Message from Our Founder
                   </Button>
                 </div>
               ) : (
-                <div className="text-center space-y-4">
-                  <div className="bg-gray-100 rounded-xl p-8 text-gray-500">
-                    [Founder Video Placeholder - Warm, personal message about mental health journey]
+                <div className="text-center space-y-6">
+                  <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-3xl p-12 text-gray-600 border-2 border-purple-200">
+                    <div className="flex items-center justify-center space-x-2 mb-4">
+                      <Heart className="w-8 h-8 text-purple-500" />
+                      <Sparkles className="w-8 h-8 text-blue-500" />
+                    </div>
+                    <p className="text-lg font-medium">Founder Video Coming Soon</p>
+                    <p className="text-sm mt-2">A warm, personal message about the mental health journey that inspired Nrvii</p>
                   </div>
                   <Button
                     onClick={() => setShowVideo(false)}
                     variant="ghost"
-                    size="sm"
-                    className="text-gray-600"
+                    className="text-gray-600 hover:text-gray-800 hover:bg-purple-50 rounded-2xl px-6 py-3 transition-all duration-200"
                   >
-                    Close Video
+                    Close Video Preview
                   </Button>
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
               <Button 
                 onClick={onNext}
-                className="flex-1 rounded-xl bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white py-3"
+                className="flex-1 rounded-2xl bg-gradient-to-r from-purple-500 via-blue-500 to-green-500 hover:from-purple-600 hover:via-blue-600 hover:to-green-600 text-white py-6 text-lg font-semibold shadow-lg transition-all duration-200 hover:shadow-xl"
               >
+                <Heart className="w-5 h-5 mr-2" />
                 Begin Your Journey
+                <Sparkles className="w-5 h-5 ml-2" />
               </Button>
               <Button 
                 onClick={onSkipToGuest}
                 variant="outline"
-                className="flex-1 rounded-xl border-gray-200 text-gray-600 hover:bg-gray-50"
+                className="flex-1 rounded-2xl border-2 border-gray-200 text-gray-600 hover:bg-gray-50 py-6 text-lg font-medium transition-all duration-200 hover:shadow-lg"
               >
                 Explore as Guest
               </Button>
@@ -121,11 +130,11 @@ const WelcomeScreen = ({ onNext, onSkipToGuest }: WelcomeScreenProps) => {
         </Card>
 
         {/* Crisis Support */}
-        <div className="text-center">
-          <p className="text-sm text-gray-500">
+        <div className="text-center p-6 bg-gradient-to-r from-red-50 to-pink-50 rounded-3xl border-2 border-red-100">
+          <p className="text-gray-700 font-medium">
             Need immediate support? 
-            <a href="#" className="text-blue-600 hover:text-blue-700 font-medium ml-1">
-              Crisis Resources Available 24/7
+            <a href="#" className="text-red-600 hover:text-red-700 font-bold ml-2 underline transition-colors">
+              Crisis Resources Available 24/7 💙
             </a>
           </p>
         </div>
