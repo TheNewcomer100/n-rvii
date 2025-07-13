@@ -3,21 +3,22 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useEncouragement } from '@/components/enhanced/EncouragementSystem';
 import { Goal, Task } from '@/types/dashboard';
+import { Dispatch, SetStateAction } from 'react';
 
 interface UseDashboardHandlersProps {
   goals: Goal[];
-  setGoals: (goals: Goal[]) => void;
+  setGoals: Dispatch<SetStateAction<Goal[]>>;
   tasks: Task[];
-  setTasks: (tasks: Task[]) => void;
+  setTasks: Dispatch<SetStateAction<Task[]>>;
   completedTasks: string[];
-  setCompletedTasks: (tasks: string[]) => void;
-  setCurrentMood: (mood: string) => void;
+  setCompletedTasks: Dispatch<SetStateAction<string[]>>;
+  setCurrentMood: Dispatch<SetStateAction<string | null>>;
   hasCheckedIn: boolean;
-  setHasCheckedIn: (checked: boolean) => void;
+  setHasCheckedIn: Dispatch<SetStateAction<boolean>>;
   lastCheckInDate: string | null;
-  setLastCheckInDate: (date: string) => void;
+  setLastCheckInDate: Dispatch<SetStateAction<string | null>>;
   streak: number;
-  setStreak: (streak: number) => void;
+  setStreak: Dispatch<SetStateAction<number>>;
 }
 
 export const useDashboardHandlers = ({
