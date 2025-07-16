@@ -6,6 +6,9 @@ import SickDayMode from "./dashboard/SickDayMode";
 import DashboardLayout from "./dashboard/DashboardLayout";
 import DashboardFooter from "./dashboard/DashboardFooter";
 import DashboardContent from "./dashboard/DashboardContent";
+import PrivacyPage from "../pages/PrivacyPage";
+import TermsPage from "../pages/TermsPage";
+import CrisisSupportPage from "../pages/CrisisSupportPage";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useDashboardHandlers } from "@/hooks/useDashboardHandlers";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -16,6 +19,7 @@ const Dashboard = () => {
   const [isSickDay, setIsSickDay] = useState(false);
   const [userName, setUserName] = useState("User");
   const [showSettings, setShowSettings] = useState(false);
+  const [currentView, setCurrentView] = useState('dashboard');
 
   const {
     goals,
@@ -64,8 +68,29 @@ const Dashboard = () => {
     await handleSickDay();
   };
 
+  const handleNavigate = (page: string) => {
+    setCurrentView(page);
+  };
+
+  const handleBackToDashboard = () => {
+    setCurrentView('dashboard');
+  };
+
+  // Handle different views
   if (showSettings) {
     return <SettingsPage onBack={() => setShowSettings(false)} userName={userName} />;
+  }
+
+  if (currentView === 'privacy') {
+    return <PrivacyPage onBack={handleBackToDashboard} />;
+  }
+
+  if (currentView === 'terms') {
+    return <TermsPage onBack={handleBackToDashboard} />;
+  }
+
+  if (currentView === 'crisis') {
+    return <CrisisSupportPage onBack={handleBackToDashboard} />;
   }
 
   if (isSickDay) {
@@ -101,7 +126,7 @@ const Dashboard = () => {
         onReflectionChange={setDailyReflection}
       />
 
-      <DashboardFooter />
+      <DashboardFooter onNavigate={handleNavigate} />
     </DashboardLayout>
   );
 };

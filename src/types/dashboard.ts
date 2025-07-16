@@ -2,6 +2,7 @@
 export interface Goal {
   id: string;
   title: string;
+  description?: string;
   category: string;
   targetDate: string;
   completed: boolean;
@@ -10,6 +11,7 @@ export interface Goal {
   achievable?: string;
   relevant?: string;
   timeBound?: string;
+  priority?: string;
 }
 
 export interface Task {

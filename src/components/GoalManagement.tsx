@@ -1,13 +1,13 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, Plus, Target, CheckCircle2, Star, Heart, Sparkles } from "lucide-react";
+import { Calendar, Plus, Target, CheckCircle2, Star, Heart, Sparkles, AlertTriangle, Clock } from "lucide-react";
 import { useState } from "react";
 import { Goal } from "@/types/dashboard";
 import { SubscriptionTier } from "@/hooks/useSubscription";
+import GoalForm from "./GoalForm";
 
 interface GoalManagementProps {
   goals: Goal[];
@@ -24,35 +24,45 @@ const GoalManagement = ({
   canCreateGoal,
   currentTier 
 }: GoalManagementProps) => {
-  const [newGoal, setNewGoal] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
 
   const activeGoals = goals.filter(goal => !goal.completed);
   const completedGoals = goals.filter(goal => goal.completed);
 
-  const handleAddGoal = () => {
-    if (newGoal.trim() && canCreateGoal) {
-      const goal: Goal = {
-        id: Date.now().toString(),
-        title: newGoal.trim(),
-        category: 'personal',
-        targetDate: new Date().toISOString().split('T')[0],
-        completed: false,
-        specific: '',
-        measurable: '',
-        achievable: '',
-        relevant: '',
-        timeBound: ''
-      };
-      
-      onGoalsChange([...goals, goal]);
-      setNewGoal('');
-      setShowAddForm(false);
-    }
+  // Sort goals by priority and date
+  const sortedActiveGoals = [...activeGoals].sort((a, b) => {
+    const priorityOrder = { high: 3, medium: 2, low: 1 };
+    const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 2;
+    const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 2;
+    if (priorityA !== priorityB) return priorityB - priorityA;
+    return new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime();
+  });
+
+  const handleGoalCreate = (goal: Goal) => {
+    onGoalsChange([...goals, goal]);
+    setShowAddForm(false);
   };
 
   const handleCompleteGoal = (goalId: string) => {
     onGoalComplete(goalId);
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'from-red-100 to-orange-100 border-red-200 text-red-700';
+      case 'medium': return 'from-blue-100 to-purple-100 border-blue-200 text-blue-700';
+      case 'low': return 'from-green-100 to-emerald-100 border-green-200 text-green-700';
+      default: return 'from-gray-100 to-gray-100 border-gray-200 text-gray-700';
+    }
+  };
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'high': return <AlertTriangle className="w-4 h-4" />;
+      case 'medium': return <Target className="w-4 h-4" />;
+      case 'low': return <Clock className="w-4 h-4" />;
+      default: return <Target className="w-4 h-4" />;
+    }
   };
 
   return (
@@ -90,38 +100,10 @@ const GoalManagement = ({
       <CardContent className="p-8 space-y-6">
         {/* Add Goal Form */}
         {showAddForm && (
-          <div className="p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-3xl border-2 border-purple-100 space-y-4 shadow-inner">
-            <div className="flex items-center space-x-2 mb-4">
-              <Heart className="w-5 h-5 text-purple-500" />
-              <h3 className="font-bold text-purple-700">What's your next dream?</h3>
-            </div>
-            <Input
-              placeholder="Describe your goal with love and intention..."
-              value={newGoal}
-              onChange={(e) => setNewGoal(e.target.value)}
-              className="rounded-2xl border-2 border-purple-200 focus:border-purple-400 bg-white/80 py-4 px-4 text-gray-700 placeholder:text-gray-500"
-              onKeyPress={(e) => e.key === 'Enter' && handleAddGoal()}
-            />
-            <div className="flex space-x-3">
-              <Button
-                onClick={handleAddGoal}
-                size="sm"
-                className="rounded-2xl bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-6 py-3 font-medium shadow-lg transition-all duration-200"
-                disabled={!newGoal.trim()}
-              >
-                <Star className="w-4 h-4 mr-2" />
-                Plant This Seed
-              </Button>
-              <Button
-                onClick={() => setShowAddForm(false)}
-                size="sm"
-                variant="outline"
-                className="rounded-2xl border-2 border-gray-200 text-gray-600 hover:bg-gray-50 px-6 py-3 font-medium transition-all duration-200"
-              >
-                Maybe Later
-              </Button>
-            </div>
-          </div>
+          <GoalForm
+            onGoalCreate={handleGoalCreate}
+            onCancel={() => setShowAddForm(false)}
+          />
         )}
 
         {/* Goal Limit Warning */}
@@ -141,7 +123,7 @@ const GoalManagement = ({
 
         {/* Active Goals */}
         <div className="space-y-4">
-          {activeGoals.map((goal) => (
+          {sortedActiveGoals.map((goal) => (
             <div
               key={goal.id}
               className="p-6 bg-gradient-to-r from-white/80 to-purple-50/50 rounded-3xl border-2 border-purple-100 hover:shadow-lg transition-all duration-200 hover:border-purple-200 group"
@@ -150,18 +132,46 @@ const GoalManagement = ({
                 <div className="flex-1 space-y-4">
                   <div className="flex items-start space-x-3">
                     <div className="w-3 h-3 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full mt-2 group-hover:scale-125 transition-transform duration-200"></div>
-                    <h4 className="font-bold text-gray-800 text-lg leading-relaxed">{goal.title}</h4>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-gray-800 text-lg leading-relaxed">{goal.title}</h4>
+                      {goal.description && (
+                        <p className="text-gray-600 text-sm mt-1">{goal.description}</p>
+                      )}
+                    </div>
                   </div>
                   
-                  <div className="flex items-center space-x-6 text-sm text-gray-600 ml-6">
+                  <div className="flex items-center space-x-4 text-sm text-gray-600 ml-6 flex-wrap gap-2">
                     <div className="flex items-center space-x-2 bg-blue-50 px-3 py-2 rounded-2xl">
                       <Calendar className="w-4 h-4 text-blue-500" />
                       <span className="font-medium">{new Date(goal.targetDate).toLocaleDateString()}</span>
                     </div>
+                    
+                    <Badge className={`bg-gradient-to-r ${getPriorityColor(goal.priority || 'medium')} text-xs font-medium px-3 py-1 flex items-center space-x-1`}>
+                      {getPriorityIcon(goal.priority || 'medium')}
+                      <span>{goal.priority || 'medium'} priority</span>
+                    </Badge>
+                    
                     <Badge className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 hover:shadow-md text-xs font-medium px-3 py-1">
                       {goal.category}
                     </Badge>
                   </div>
+                  
+                  {/* SMART Goals Preview */}
+                  {(goal.specific || goal.measurable || goal.achievable || goal.relevant || goal.timeBound) && (
+                    <div className="ml-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-100">
+                      <h5 className="text-sm font-semibold text-blue-800 mb-2 flex items-center space-x-1">
+                        <Star className="w-4 h-4" />
+                        <span>SMART Framework</span>
+                      </h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-600">
+                        {goal.specific && <div><strong>Specific:</strong> {goal.specific}</div>}
+                        {goal.measurable && <div><strong>Measurable:</strong> {goal.measurable}</div>}
+                        {goal.achievable && <div><strong>Achievable:</strong> {goal.achievable}</div>}
+                        {goal.relevant && <div><strong>Relevant:</strong> {goal.relevant}</div>}
+                        {goal.timeBound && <div><strong>Time-bound:</strong> {goal.timeBound}</div>}
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Progress */}
                   <div className="ml-6 space-y-2">

@@ -15,14 +15,15 @@ const ProgressSection = ({ goals, completedTasks, streak }: ProgressSectionProps
   const activeGoals = goals.filter(goal => !goal.completed);
   const completedGoals = goals.filter(goal => goal.completed);
   
-  // Calculate today's progress
-  const todaysTasks = 3; // This would be dynamic based on suggested tasks
+  // Calculate today's progress - show encouraging starting progress
+  const todaysTasks = Math.max(3, completedTasks.length + 1);
   const todaysProgress = Math.min((completedTasks.length / todaysTasks) * 100, 100);
   
-  // Calculate weekly progress (continuous tracking without Monday reset)
-  const weeklyTasksCompleted = 8; // This would track actual completed tasks over time
-  const weeklyTasksTotal = 15;
-  const weeklyProgress = (weeklyTasksCompleted / weeklyTasksTotal) * 100;
+  // Calculate overall progress with encouraging baseline
+  const totalGoals = Math.max(goals.length, 1);
+  const completedGoalsCount = goals.filter(g => g.completed).length;
+  const baseProgress = goals.length === 0 ? 15 : 0; // Give new users encouraging start
+  const weeklyProgress = Math.min(baseProgress + (completedGoalsCount / totalGoals) * 85, 100);
 
   return (
     <div className="space-y-6">

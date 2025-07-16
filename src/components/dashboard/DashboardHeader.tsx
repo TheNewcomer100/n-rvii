@@ -38,7 +38,7 @@ const DashboardHeader = ({
               </div>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  Hello, {userName}! 👋
+                  Welcome to Nrvii
                 </h1>
                 <div className="flex items-center space-x-3 text-sm text-gray-600">
                   <div className="flex items-center space-x-1 bg-orange-50 px-2 py-1 rounded-xl">

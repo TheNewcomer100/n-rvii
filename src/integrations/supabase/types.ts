@@ -266,6 +266,57 @@ export type Database = {
         }
         Relationships: []
       }
+      parameters: {
+        Row: {
+          created_at: string | null
+          id: number
+          name: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          name: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          name?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
+      pie_chart_entries: {
+        Row: {
+          activity: string
+          created_at: string | null
+          date: string
+          hour: number
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          activity: string
+          created_at?: string | null
+          date: string
+          hour: number
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          activity?: string
+          created_at?: string | null
+          date?: string
+          hour?: number
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

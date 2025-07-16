@@ -80,9 +80,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           preferences: {}
         });
 
+      // Create initial streak record with encouraging start
+      const { error: streakError } = await supabase
+        .from('streaks')
+        .upsert({
+          user_id: user.id,
+          current_streak: 1, // Start with 1 to encourage users
+          longest_streak: 1,
+          last_check_in: new Date().toISOString().split('T')[0],
+          sick_days: []
+        });
+
+      // Create a welcome goal to help new users get started
+      const { error: goalError } = await supabase
+        .from('goals')
+        .upsert({
+          user_id: user.id,
+          goal_text: 'Get started with my wellness journey',
+          title: 'Welcome to Nrvii',
+          date: new Date().toISOString().split('T')[0],
+          priority: 2, // medium priority as integer
+          category: 'personal',
+          completed: false,
+          progress_percentage: 20, // Give encouraging starting progress
+          specific: 'Explore the Nrvii platform and set up my first goals',
+          measurable: 'Complete onboarding and create my first personal goal',
+          achievable: 'This is a simple and achievable first step',
+          relevant: 'Starting my wellness journey is important for my growth',
+          time_bound: 'Complete within the first week'
+        });
+
       if (profileError) console.error('Profile creation error:', profileError);
       if (preferencesError) console.error('Preferences creation error:', preferencesError);
       if (onboardingError) console.error('Onboarding creation error:', onboardingError);
+      if (streakError) console.error('Streak creation error:', streakError);
+      if (goalError) console.error('Goal creation error:', goalError);
     } catch (error) {
       console.error('Error creating user data:', error);
     }
