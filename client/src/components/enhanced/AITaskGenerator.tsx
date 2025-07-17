@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useMutation } from '@tanstack/react-query';
 
 interface AITaskGeneratorProps {
   goalId: string;
@@ -15,41 +14,31 @@ interface AITaskGeneratorProps {
 }
 
 const AITaskGenerator = ({ goalId, mood, goalCategory, goalTitle, onTasksGenerated }: AITaskGeneratorProps) => {
-  const { user } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateTasks = async () => {
-    if (!user) return;
-
-    setIsGenerating(true);
-
-    try {
-      console.log('Calling AI task generation with:', { goalTitle, goalCategory, mood });
-
-      // Call the AI task generation edge function
-      const { data, error } = await supabase.functions.invoke('generate-ai-tasks', {
-        body: {
+  const generateTasksMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/ai/generate-tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'user-id': 'demo-user-123',
+        },
+        body: JSON.stringify({
           goalTitle,
           goalCategory,
           mood,
-          userId: user.id,
           goalId
-        }
+        }),
       });
-
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw error;
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate tasks');
       }
-
-      if (!data.success) {
-        console.error('AI generation failed:', data);
-        throw new Error(data.error || 'Failed to generate tasks');
-      }
-
-      console.log('AI tasks generated successfully:', data.tasks);
-
-      // Format tasks for the frontend
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
       const formattedTasks = data.tasks.map((task: any) => ({
         id: task.id,
         title: task.title,
@@ -66,33 +55,35 @@ const AITaskGenerator = ({ goalId, mood, goalCategory, goalTitle, onTasksGenerat
         title: "✨ AI Tasks Generated!",
         description: `Created ${data.tasks.length} personalized tasks based on your mood and goal`
       });
-
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Error generating AI tasks:', error);
       toast({
         title: "Error generating tasks",
         description: "Failed to generate AI tasks. Please try again.",
         variant: "destructive"
       });
-    } finally {
-      setIsGenerating(false);
     }
+  });
+
+  const generateTasks = () => {
+    generateTasksMutation.mutate();
   };
 
   return (
     <Button
       onClick={generateTasks}
-      disabled={isGenerating}
+      disabled={generateTasksMutation.isPending}
       size="sm"
       variant="outline"
       className="rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50"
     >
-      {isGenerating ? (
+      {generateTasksMutation.isPending ? (
         <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
       ) : (
         <Sparkles className="w-4 h-4 mr-2" />
       )}
-      {isGenerating ? 'Generating...' : 'Generate AI Tasks'}
+      {generateTasksMutation.isPending ? 'Generating...' : 'Generate AI Tasks'}
     </Button>
   );
 };

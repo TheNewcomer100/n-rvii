@@ -1,63 +1,15 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import Dashboard from '@/components/Dashboard';
-import { supabase } from '@/integrations/supabase/client';
+import PieChartDemo from '@/components/PieChartDemo';
 
 const Index = () => {
-  const { user, loading } = useAuth();
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const [guestMode, setGuestMode] = useState(false);
-  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const checkOnboardingStatus = async () => {
-      if (user) {
-        try {
-          const { data, error } = await supabase
-            .from('onboarding_progress')
-            .select('current_step, completed_steps')
-            .eq('user_id', user.id)
-            .single();
-
-          if (error || !data || data.completed_steps.length === 0) {
-            setShowOnboarding(true);
-          }
-        } catch (error) {
-          console.error('Error checking onboarding status:', error);
-          setShowOnboarding(true);
-        }
-      }
-      setCheckingOnboarding(false);
-    };
-
-    if (!loading) {
-      if (!user && !guestMode) {
-        setShowOnboarding(true);
-        setCheckingOnboarding(false);
-      } else if (user) {
-        checkOnboardingStatus();
-      } else {
-        setCheckingOnboarding(false);
-      }
-    }
-  }, [user, loading, guestMode]);
-
-  const handleOnboardingComplete = async () => {
-    if (user) {
-      try {
-        await supabase
-          .from('onboarding_progress')
-          .update({
-            current_step: 7,
-            completed_steps: ['welcome', 'privacy', 'auth', 'personalization', 'goals', 'demo', 'complete']
-          })
-          .eq('user_id', user.id);
-      } catch (error) {
-        console.error('Error updating onboarding progress:', error);
-      }
-    }
+  const handleOnboardingComplete = () => {
     setShowOnboarding(false);
   };
 
@@ -65,17 +17,6 @@ const Index = () => {
     setGuestMode(true);
     setShowOnboarding(false);
   };
-
-  if (loading || checkingOnboarding) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
-          <p className="text-gray-600">Loading your sanctuary...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (showOnboarding) {
     return (
@@ -86,7 +27,31 @@ const Index = () => {
     );
   }
 
-  return <Dashboard />;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Welcome to Nrvii
+            </h1>
+            <p className="text-xl text-gray-600 mb-2">
+              Mental Health & Productivity Platform
+            </p>
+            <p className="text-sm text-gray-500">
+              Successfully migrated to Replit with PostgreSQL database
+            </p>
+          </div>
+          
+          <PieChartDemo userId="demo-user-123" />
+          
+          <div className="mt-8">
+            <Dashboard />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Index;

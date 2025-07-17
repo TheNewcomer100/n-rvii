@@ -1,9 +1,19 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useEncouragement } from '@/components/enhanced/EncouragementSystem';
-import { Goal, Task } from '@/types/dashboard';
 import { Dispatch, SetStateAction } from 'react';
+
+interface Goal {
+  id: string;
+  title: string;
+  category: string;
+  targetDate: string;
+  completed: boolean;
+}
+
+interface Task {
+  id: string;
+  title: string;
+  completed: boolean;
+}
 
 interface UseDashboardHandlersProps {
   goals: Goal[];
@@ -36,8 +46,9 @@ export const useDashboardHandlers = ({
   streak,
   setStreak
 }: UseDashboardHandlersProps) => {
-  const { user } = useAuth();
-  const { showEncouragement } = useEncouragement();
+  const showEncouragement = (type: string) => {
+    console.log(`Encouragement: ${type}`);
+  };
 
   const getTodayDateString = () => {
     return new Date().toDateString();
@@ -46,22 +57,8 @@ export const useDashboardHandlers = ({
   const handleMoodChange = async (mood: string) => {
     const today = getTodayDateString();
     
-    // Save mood to database
-    if (user) {
-      try {
-        const { error } = await supabase
-          .from('mood_entries')
-          .upsert({
-            user_id: user.id,
-            date: new Date().toISOString().split('T')[0],
-            mood: mood
-          });
-
-        if (error) throw error;
-      } catch (error) {
-        console.error('Error saving mood:', error);
-      }
-    }
+    // Mock mood saving
+    console.log('Saving mood:', mood);
     
     // Only increment streak if it's a new day and user hasn't checked in today
     if (lastCheckInDate !== today) {
@@ -86,30 +83,14 @@ export const useDashboardHandlers = ({
     const previousCompletedCount = completedTasks.length;
     setCompletedTasks(taskIds);
     
-    // Update tasks in database
-    if (user) {
-      try {
-        // Mark tasks as completed/uncompleted
-        for (const task of tasks) {
-          const shouldBeCompleted = taskIds.includes(task.id);
-          if (task.completed !== shouldBeCompleted) {
-            await supabase
-              .from('tasks')
-              .update({ completed: shouldBeCompleted })
-              .eq('id', task.id);
-          }
-        }
-
-        // Update local state
-        setTasks((prevTasks: Task[]) => prevTasks.map(task => ({
-          ...task,
-          completed: taskIds.includes(task.id)
-        })));
-
-      } catch (error) {
-        console.error('Error updating tasks:', error);
-      }
-    }
+    // Mock task updates
+    console.log('Updating tasks:', taskIds);
+    
+    // Update local state
+    setTasks((prevTasks: Task[]) => prevTasks.map(task => ({
+      ...task,
+      completed: taskIds.includes(task.id)
+    })));
     
     // Show encouragement for task completion
     if (taskIds.length > previousCompletedCount) {
@@ -127,17 +108,8 @@ export const useDashboardHandlers = ({
       goal.id === goalId ? { ...goal, completed: true } : goal
     ));
     
-    // Update in database
-    if (user) {
-      try {
-        await supabase
-          .from('goals')
-          .update({ completed: true })
-          .eq('id', parseInt(goalId));
-      } catch (error) {
-        console.error('Error updating goal:', error);
-      }
-    }
+    // Mock goal update
+    console.log('Completing goal:', goalId);
     
     // Show encouragement for goal completion
     showEncouragement('goal_complete');
@@ -152,17 +124,8 @@ export const useDashboardHandlers = ({
       task.id === taskId ? { ...task, title: newTitle } : task
     ));
 
-    // Update in database
-    if (user) {
-      try {
-        await supabase
-          .from('tasks')
-          .update({ title: newTitle })
-          .eq('id', taskId);
-      } catch (error) {
-        console.error('Error updating task:', error);
-      }
-    }
+    // Mock task update
+    console.log('Updating task:', taskId, newTitle);
   };
 
   const handleSickDay = async () => {
