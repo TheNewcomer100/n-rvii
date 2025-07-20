@@ -1,30 +1,40 @@
-// src/pages/BetaSignup.tsx
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BetaSignup() {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleSignup = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signUp(
-      { email, password },
-      { data: { tier: "beta" } }
-    );
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { tier: "beta" }
+      }
+    });
     setLoading(false);
 
     if (error) {
-      toast({ title: "Signup failed", description: error.message, variant: "destructive" });
+      toast({ 
+        title: "Signup failed", 
+        description: error.message, 
+        variant: "destructive" 
+      });
     } else {
-      toast({ title: "Welcome!", description: "Redirecting you now…" });
-      navigate("/"); // back to / where Index renders Dashboard
+      toast({ 
+        title: "Welcome!", 
+        description: "Redirecting you now…" 
+      });
+      setLocation("/");
     }
   };
 

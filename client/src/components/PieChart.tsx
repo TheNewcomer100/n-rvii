@@ -56,7 +56,7 @@ const TaskPieChart: React.FC<PieChartProps> = ({ userId, isSickDay = false, clas
   });
 
   // Process data for pie chart
-  const chartData: ChartData[] = taskLogs.reduce((acc: ChartData[], log: TaskLogEntry) => {
+  const chartData: ChartData[] = (taskLogs as TaskLogEntry[]).reduce((acc: ChartData[], log: TaskLogEntry) => {
     const existingActivity = acc.find(item => item.name === log.activity);
     if (existingActivity) {
       existingActivity.value += log.duration;

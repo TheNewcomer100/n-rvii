@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, Circle, Sparkles, Edit3 } from "lucide-react";
 import { Goal, Task } from '@/types/dashboard';
 import AITaskGenerator from './enhanced/AITaskGenerator';
-import InlineTaskEditor from './enhanced/InlineTaskEditor';
+import { InlineTaskEditor } from './enhanced/InlineTaskEditor';
 
 interface TaskSuggestionsProps {
   mood: string | null;

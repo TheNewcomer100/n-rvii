@@ -1,5 +1,7 @@
 // client/src/components/dashboard/DashboardContent.tsx
 import React from 'react';
+import PieChart from '@/components/PieChart';
+import SickDayMode from '@/components/dashboard/SickDayMode';
 
 interface Goal {
   id: string;
@@ -30,6 +32,8 @@ interface DashboardContentProps {
   dailyReflection: string;
   canCreateGoal: boolean;
   currentTier: SubscriptionTier;
+  isSickDay?: boolean;
+  userId?: string;
   onMoodChange: (mood: string) => void;
   onGoalsChange: (goals: Goal[]) => void;
   onGoalComplete: (goalId: string) => void;
@@ -37,6 +41,7 @@ interface DashboardContentProps {
   onTasksGenerated: (tasks: Task[]) => void;
   onTaskUpdate: (taskId: string, newTitle: string) => void;
   onReflectionChange: (reflection: string) => void;
+  onSickDayReturn?: () => void;
 }
 
 const DashboardContent: React.FC<DashboardContentProps> = ({
@@ -48,6 +53,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   dailyReflection,
   canCreateGoal,
   currentTier,
+  isSickDay = false,
+  userId,
   onMoodChange,
   onGoalsChange,
   onGoalComplete,
@@ -55,7 +62,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   onTasksGenerated,
   onTaskUpdate,
   onReflectionChange,
+  onSickDayReturn,
 }) => {
+  if (isSickDay && onSickDayReturn) {
+    return <SickDayMode onReturn={onSickDayReturn} />;
+  }
   return (
     <div className="space-y-6 p-6">
       <div className="text-center">
@@ -88,6 +99,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           <p className="text-orange-600">{completedTasks.length}/{tasks.length} completed</p>
         </div>
       </div>
+      
+      {/* Activity Pie Chart */}
+      {userId && (
+        <div className="mt-6">
+          <PieChart userId={userId} isSickDay={isSickDay} />
+        </div>
+      )}
     </div>
   );
 };

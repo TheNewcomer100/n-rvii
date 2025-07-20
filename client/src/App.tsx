@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Router, Route, Switch } from "wouter";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import BetaSignup from "../../src/pages/BetaSignup";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +33,7 @@ const App = () => (
       <Router>
         <Switch>
           <Route path="/" component={Index} />
+          <Route path="/beta-signup" component={BetaSignup} />
           <Route path="*" component={NotFound} />
         </Switch>
       </Router>
