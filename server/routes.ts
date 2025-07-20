@@ -279,7 +279,7 @@ Response format (JSON array only):
       console.error('Error in generate-ai-tasks:', error);
       res.status(500).json({ 
         error: 'Failed to generate AI tasks',
-        details: error.message 
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
