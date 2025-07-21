@@ -2,18 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Heart, Phone, MessageCircle, Clock, Globe } from "lucide-react";
 
-interface CrisisSupportPageProps {
-  onBack: () => void;
-}
-
-const CrisisSupportPage = ({ onBack }: CrisisSupportPageProps) => {
+const CrisisSupportPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
       <div className="max-w-4xl mx-auto p-6 space-y-8">
         {/* Header */}
         <div className="flex items-center space-x-4">
           <Button
-            onClick={onBack}
+            onClick={() => window.history.back()}
             variant="ghost"
             size="sm"
             className="rounded-2xl text-gray-600 hover:text-gray-800 hover:bg-gray-100"

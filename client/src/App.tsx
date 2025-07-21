@@ -3,9 +3,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Router, Route, Switch } from "wouter";
+import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import BetaSignup from "../../src/pages/BetaSignup";
+import BetaSignup from "./pages/BetaSignup";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
+import CrisisSupportPage from "./pages/CrisisSupportPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,17 +31,22 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <Router>
-        <Switch>
-          <Route path="/" component={Index} />
-          <Route path="/beta-signup" component={BetaSignup} />
-          <Route path="*" component={NotFound} />
-        </Switch>
-      </Router>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <Router>
+          <Switch>
+            <Route path="/" component={Index} />
+            <Route path="/beta-signup" component={BetaSignup} />
+            <Route path="/privacy" component={PrivacyPage} />
+            <Route path="/terms" component={TermsPage} />
+            <Route path="/crisis" component={CrisisSupportPage} />
+            <Route path="*" component={NotFound} />
+          </Switch>
+        </Router>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
