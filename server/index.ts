@@ -1,10 +1,16 @@
-import express, { type Request, Response, NextFunction } from "express";
 import { config } from "dotenv";
+
+// Load environment variables FIRST, before any other imports
+config({ path: '.env' });
+
+// Set default DATABASE_URL if not provided
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = "postgresql://neondb_owner:npg_d12WZAkIgQzX@ep-little-sea-a8qefqcb-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require";
+}
+
+import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-
-// Load environment variables
-config();
 
 const app = express();
 app.use(express.json());

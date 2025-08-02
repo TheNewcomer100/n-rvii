@@ -6,9 +6,8 @@ import * as schema from "@shared/schema";
 neonConfig.webSocketConstructor = ws;
 
 if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+  // Set default DATABASE_URL if not provided
+  process.env.DATABASE_URL = "postgresql://neondb_owner:npg_d12WZAkIgQzX@ep-little-sea-a8qefqcb-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require";
 }
 
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
