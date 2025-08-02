@@ -7,18 +7,16 @@ import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import DashboardContentFull from '@/components/enhanced/DashboardContentFull';
 
 const Index = () => {
-  const { user, session, loading } = useAuth();
+  const { user, session, loading, isPaid, isGuest } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const [guestMode, setGuestMode] = useState(false);
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
   };
 
   const handleGuestMode = () => {
-    setGuestMode(true);
-    setShowLogin(false);
+    window.location.href = '/guest-dashboard';
   };
 
   // Show loading state
@@ -44,7 +42,7 @@ const Index = () => {
   }
 
   // Show login popup for unauthenticated users
-  if (!user && !guestMode) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
@@ -82,7 +80,18 @@ const Index = () => {
     );
   }
 
-  // Show dashboard for authenticated users or guest mode
+  // Show dashboard for authenticated users
+  if (isGuest) {
+    window.location.href = '/guest-dashboard';
+    return null;
+  }
+  
+  if (isPaid) {
+    window.location.href = '/paid-dashboard';
+    return null;
+  }
+
+  // Default authenticated dashboard
   return (
     <DashboardLayout>
       <DashboardContentFull />

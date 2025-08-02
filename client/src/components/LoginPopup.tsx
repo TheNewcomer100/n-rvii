@@ -113,22 +113,13 @@ export default function LoginPopup({ isOpen, onClose, onGuestMode }: LoginPopupP
   const handleAnonymousSignIn = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInAnonymously();
-      
-      if (error) {
-        toast({ 
-          title: "Anonymous sign in failed", 
-          description: error.message, 
-          variant: "destructive" 
-        });
-      } else {
-        toast({ 
-          title: "Welcome!", 
-          description: "Signed in as guest" 
-        });
-        onGuestMode();
-        onClose();
-      }
+      // For demo, just set guest mode
+      toast({ 
+        title: "Welcome!", 
+        description: "Signed in as guest" 
+      });
+      onGuestMode();
+      onClose();
     } catch (err) {
       toast({ 
         title: "Unexpected error", 

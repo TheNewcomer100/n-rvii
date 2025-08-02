@@ -344,7 +344,7 @@ const DashboardContentFull = ({ isSickDay = false, onSickDayReturn }: DashboardC
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <MoodCheckIn onMoodChange={handleMoodChange} />
+          <MoodCheckIn currentMood={currentMood} onMoodChange={handleMoodChange} />
           {energyLevel > 0 && (
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-600 mb-2">Today's Energy:</p>

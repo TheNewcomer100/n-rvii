@@ -19,6 +19,9 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: any }>;
   signInWithApple: () => Promise<{ error: any }>;
+  signInAsGuest: () => Promise<{ error: any }>;
+  isPaid: boolean;
+  isGuest: boolean;
   loading: boolean;
 }
 
@@ -28,17 +31,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
-    // Mock user for demo purposes
-    const mockUser: User = {
-      id: 'demo-user-123',
-      email: 'demo@example.com',
-      user_metadata: { full_name: 'Demo User' }
-    };
+    // Check for guest mode
+    const guestMode = localStorage.getItem('guest_mode');
+    if (guestMode === 'true') {
+      setIsGuest(true);
+      const mockGuestUser: User = {
+        id: 'guest-user',
+        email: 'guest@nrvii.com',
+        user_metadata: { full_name: 'Guest User' }
+      };
+      setUser(mockGuestUser);
+      setSession({ user: mockGuestUser });
+    }
     
-    setUser(mockUser);
-    setSession({ user: mockUser });
+    // Check payment status
+    const paidStatus = localStorage.getItem('user_paid');
+    setIsPaid(paidStatus === 'true');
+    
     setLoading(false);
   }, []);
 
@@ -72,6 +85,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error: null };
   };
 
+  const signInAsGuest = async () => {
+    const mockGuestUser: User = {
+      id: 'guest-user',
+      email: 'guest@nrvii.com',
+      user_metadata: { full_name: 'Guest User' }
+    };
+    
+    setUser(mockGuestUser);
+    setSession({ user: mockGuestUser });
+    setIsGuest(true);
+    localStorage.setItem('guest_mode', 'true');
+    
+    return { error: null };
+  };
+
   const value = {
     user,
     session,
@@ -80,6 +108,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signOut,
     signInWithGoogle,
     signInWithApple,
+    signInAsGuest,
+    isPaid,
+    isGuest,
     loading
   };
 
